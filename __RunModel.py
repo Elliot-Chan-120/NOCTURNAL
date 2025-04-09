@@ -155,6 +155,31 @@ class RunModel:
             'pIC50': self.prediction_list
         })
 
+        # Generate files
         result_output_dataframe.to_csv(self.result_predictions / f"{self.mdl_nm}_predictions.csv")
+        self.datavis()
+        print("Prediction file and pIC50 comparison barchart generated: check dir _Predictions")
 
-        print("Prediction file generated: check dir _Predictions")
+
+    def datavis(self):
+        """
+        outputs pIC50 comparison barchart
+        """
+        df = pd.read_csv(self.result_predictions / f"{self.mdl_nm}_predictions.csv")
+
+        sns.set_theme(color_codes=True)
+        sns.set_style("white")
+
+        ax = sns.barplot(x=df['Molecule ID'], y=df['pIC50'],  edgecolor='white', linewidth=0.7)
+        ax.set_title(f"{self.mdl_nm} Predictions for {self.inp_smi}", fontsize='medium')
+
+        ax.set_xlabel('Molecule Candidates', fontsize='large', fontweight='bold')
+        ax.set_ylabel('Predicted pIC50', fontsize='large', fontweight='bold')
+
+        ax.figure.set_size_inches(5, 5)
+        plt.xticks(rotation=45, ha='right')
+
+        plt.tight_layout()
+        plt.savefig(self.result_predictions / f"{self.mdl_nm}_candidate_pIC50.pdf")
+        plt.close()
+        
