@@ -15,15 +15,15 @@ class MutaGen:
     \n Local modifications might reveal analogues with better activity, improved pharmacokinetics and reduced toxicity
     """
 
-    def __init__(self, model_name, fingerprint_setting, candidates=10, desired_iterations=100):
+    def __init__(self, model_name, fingerprint_setting):
         self.mdl_nm = model_name
-        self.iterations = desired_iterations
-        self.candidates = candidates
         self.fp = fingerprint_setting
 
         # Verify that all appropriate config keys and folders are present
         # Load cfg
         self.cfg = validate_config()
+        self.iterations = self.cfg['iterations']
+        self.candidates = self.cfg['candidates']
 
         # load up files
         self.model_folder = Path(self.cfg['model_folder']) / f"{self.mdl_nm}"
@@ -159,7 +159,7 @@ class MutaGen:
 
         final_df = pd.DataFrame({'Optimized SMILES Candidate': base_smiles, 'pIC50 Values': base_score})
 
-        final_df.to_csv(self.model_folder / 'OPTIMIZED_CHEMICAL_SMILES!.csv')
+        final_df.to_csv(Path(self.cfg['predictions']) / f'{self.mdl_nm}_optimized_molecules.csv')
 
 
     def random_mutation(self, smiles):

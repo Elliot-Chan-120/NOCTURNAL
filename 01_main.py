@@ -19,3 +19,4 @@ def demo_runmodel():
 def demo_optimizecompound():
     MutaGen('test_model_1', 'PubChem').init_optimize()
 
+demo_optimizecompound()

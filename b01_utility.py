@@ -54,6 +54,7 @@ def validate_config():
         'ml_model_type',
         'try_limit', 'settings', 'train_test_split', 'cross_validate', 'grid_search', 'use_best_params',
         'random_forest_params',
+        'candidates', 'iterations',
         'data_scout_csv', 'auto_save_model', 'n_features'
     ]
 
