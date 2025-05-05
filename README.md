@@ -10,7 +10,7 @@
 NOCTURNAL (v2.0.0) is a ChEMBL database navigation-aided interface for training ML models on drug-protein potency & compound molecular fingerprint analysis. Models can then be used to perform the following:
 
 - Predict candidate compounds’ potencies (pIC50 values) against the respective target protein.
-- Optimize drug candidate structures by being deployed in a molecular optimization algorithm system (class MutaGen) that stochastically explores chemical space to aiming to generate improved drug candidate analogs. Heuristic techniques maintain oral bioavailability properties of all candidates produced.
+- Optimize drug candidate structures by being deployed in a molecular optimization algorithm system (class MutaGen) that stochastically explores chemical space aiming to generate improved drug candidate analogs. Heuristic techniques maintain oral bioavailability properties of all candidates produced.
 
 All of this occurs within a modular, fault-tolerant architecture aimed at accelerating drug discovery workflows.
 
