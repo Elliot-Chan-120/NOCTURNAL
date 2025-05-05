@@ -1,8 +1,0 @@
-Processing CHEMBL5181121 in VALID_test_smile.smi (1/7). 
-Processing CHEMBL5180431 in VALID_test_smile.smi (2/7). 
-Processing CHEMBL5205646 in VALID_test_smile.smi (4/7). Average speed: 0.27 s/mol.
-Processing CHEMBL5183579 in VALID_test_smile.smi (3/7). Average speed: 0.54 s/mol.
-Processing CHEMBL5182648 in VALID_test_smile.smi (5/7). Average speed: 0.24 s/mol.
-Processing CHEMBL5207987 in VALID_test_smile.smi (6/7). Average speed: 0.20 s/mol.
-Processing CHEMBL5206274 in VALID_test_smile.smi (7/7). Average speed: 0.18 s/mol.
-Descriptor calculation completed in 1.70 secs . Average speed: 0.15 s/mol.

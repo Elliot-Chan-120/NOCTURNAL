@@ -1,0 +1,94 @@
+# =====================================
+# FOLDERS
+# =====================================
+predictions: "predictions"
+input_folder: "input_folder"
+assessments: "assessments"
+model_folder: "ml_models"
+input_fp_folder: "input_fingerprint_data"
+bioactivity_folder: "database"
+padel_xmls: "padel_fp_xmls"
+
+# [BIOACTIVITY FILES]
+rawdf_1: "1_raw_bioact.csv"
+labeldf_2: "2_labelled_bioact_data.csv"
+pIC50df_3: "3_pIC50_dataclass.csv"
+smile_data: "molecules.smi"
+fp_output: "fingerprint_output.csv"
+fingerprintdf_4: "4_Bioactivity_Dataset_pIC50.csv"
+
+
+# =====================================
+# PADEL SETTINGS
+# =====================================
+try_limit: 3
+settings:
+  'AtomPairs2D': 'AtomPairs2DFingerprinter.xml'
+  'AtomPairs2DCount': 'AtomPairs2DFingerprintCount.xml'
+  'CDK': 'Fingerprinter.xml'
+  'CDKextended': 'ExtendedFingerprinter.xml'
+  'CDKgraphonly': 'GraphOnlyFingerprinter.xml'
+  'EState': 'EStateFingerprinter.xml'
+  'KlekotaRoth': 'KlekotaRothFingerprinter.xml'
+  'KlekotaRothCount': 'KlekotaRothFingerprintCount.xml'
+  'MACCS': 'MACCSFingerprinter.xml'
+  'PubChem': 'PubchemFingerprinter.xml'
+  'Substructure': 'SubstructureFingerprinter.xml'
+  'SubstructureCount': 'SubstructureFingerprintCount.xml'
+
+
+#=====================================
+# MODEL TRAINING SETTINGS
+#=====================================
+ml_model_type: 'RandomForestRegressor'
+# OPTIONS -> RandomForestRegressor, XGBoosting, Stacking
+
+train_test_split:
+  test_size: 0.2
+  random_state: 42
+  shuffle: true
+
+cross_validate:
+  cv: 5
+  scoring: scoring
+  return_estimator: true
+
+
+# =====================================
+# HYPERPARAM. OPTIMIZATION SETTINGS
+# =====================================
+grid_search:
+  scoring: 'neg_mean_squared_error'
+  cv: 5
+  n_jobs: -1
+  verbose: 1
+
+use_best_params: true
+
+
+# =====================================
+# DEFAULT MODEL SETTINGS
+# =====================================
+random_forest_params:
+  n_estimators: 100
+  max_depth: null
+  min_samples_split: 2
+  min_samples_leaf: 1
+  max_features: null
+  bootstrap: true
+  random_state: 42
+
+xgb_params:
+  n_estimators: 100
+  learning_rate: 0.1
+  max_depth: 6
+  subsample: 0.8
+  colsample_bytree: 0.8
+
+
+# ====
+# MISC
+# ====
+data_scout_csv: true
+auto_save_model: true
+n_features: 20
