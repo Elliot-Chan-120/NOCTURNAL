@@ -3,6 +3,7 @@
 *Exploring the dark chemical space.*
 
 - developed by: Elliot Chan
+- contact: elliotchan120@gmail.com
 
 ## [1] Overview - for busy readers.
 
