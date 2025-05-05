@@ -305,7 +305,7 @@ This section goes deeper into the core algorithms and background processes that 
 
 - Stochastic approach to generating varied compounds: the algorithm system utilizes a random_mutation() function to randomly introduce fragment addition, atom replacement and removal to simulate chemical space exploration
 - Heuristic approach to validating compounds and breaking local optima: the new compound must fulfill two rules to pass on to the next iteration:
-    1. It must have a pIC50 value improvenent greater than 0.05 (will make this configurable)
+    1. It must have a pIC50 value improvement greater than 0.05 (will make this configurable)
     2. It must fulfill minimum 2/4 Lipinski rules of oral bioavailability
     - If it fails to meet one of these, it does not make it through to the next iteration and the previous is kept. A “keep_counter” integer associated with each candidate compound is incremented by +1. When this number reaches 3, the rules to pass on change, allowing mutations resulting in negative pIC50 changes down to -0.5 and 0+ lipinski criteria fulfilled. The aim of this is to explore other chemical space orientations and escape plateaus in pIC50.
 - Mutations are guided by a curated set of bioactive fragments instead of random atoms, improving the chemical realism of generated structures.
