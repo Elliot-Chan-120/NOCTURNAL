@@ -38,14 +38,13 @@ data_scout will query the ChEMBL database for drug data on that target protein, 
 > 
 > INDEX[23] CHEMBL4036 | Homo sapiens | SINGLE PROTEIN | 475 IC50 entries
 
-
-Data indices are automatically ranked according to number of IC50 entries, which we will later convert into pIC50, which is a metric for drug potency, I just pasted the first 4 results. Each entry contains a chemical compound that was tested against that target protein, and had its IC50 value recorded. With some more data processing that occurs in the next class, we can obtain their chemical formulas as a string called SMILES, which looks like this: “O=C1Cc2c([nH]c3ccc(Br)cc23)-c2cc(Br)ccc2N1” - CHEMBL98360
-
-If you need more info:
+What does all of this mean?
 
 IC50 = half-maximal inhibitory concentration. In other words: What concentration of ‘x’ do I need to inhibit a biological target ‘y’ by 50%?
 
 pIC50 = -log_10(IC50) → a potency metric. Higher = more potent, note that IC50 is in Molarity (M)
+
+Data indices (INDEX['x]) are automatically ranked according to number of IC50 entries, which we will later convert into pIC50, a metric for drug potency. What we see above is the first 4 results. Each entry contains a chemical compound that was tested against that target protein, and had its IC50 value recorded. With some more data processing that occurs in the next class, we can obtain their chemical formulas as a string called SMILES, which looks like this: “O=C1Cc2c([nH]c3ccc(Br)cc23)-c2cc(Br)ccc2N1” - CHEMBL98360
 
 **[2] Data Processing and Model Training**
 
@@ -132,7 +131,7 @@ Wait, why are all the names (and not the SMILES…) messed up? My bad, my hands 
 
 Note how the second last compound didn’t have a name originally but now has the name “compound_1”.
 
-This is all done automatically when you call on the class, so let’s look at what we need to pass on to it. Note how we didn’t say test_model_1.pkl or test_smile.smi, we just used the raw names with no file suffixes. 
+This is all done automatically when you call on the class, so let’s look at what we need to pass on to it. We didn’t say test_model_1.pkl or test_smile.smi, we just used the raw names with no file suffixes. 
 
 ```python
 RunModel(model_name = “test_model_1”, input_smiles_filename = “test_smile”, fingerprint = “PubChem”).run_predictions()
@@ -293,7 +292,7 @@ This section goes deeper into the core algorithms and background processes that 
 
 **[2] Navigation-aided approach**
 
-- data_scout()’s aim is to cut down on decision making by automatically sorting data indices by largest IC50 data entries to lowest, and it takes this one step further by outputting data quality information, such as where the data came from. This is relevant since its generally better to train models on larger amounts of higher quality data.
+- data_scout()’s aim is to facilitate decision making by automatically sorting data indices by largest IC50 data entries to lowest, and it takes this one step further by outputting data quality information, such as where the data came from. This is relevant since its generally better to train models on larger amounts of higher quality data.
 
 **[3] ModelBuilder’s modular feature organization**
 
@@ -301,7 +300,7 @@ This section goes deeper into the core algorithms and background processes that 
 - RFR and XGBR go through hyperparameter optimization using GridSearchCV, while Stacking remains default (computationally expensive and time-comsuming on top of greater overfitting risk on smaller datasets. I might still add it in later on though).
 - All go through sequential model evaluation: hold-out test set followed by k-fold cross validation. Model evaluation metrics such as R^2, RMSE, MAE on top of model performance and feature importance graphs are saved into the assessments folder.
 
-**[4] MutaGen’s algorithm system (I built this all by myself by the way don’t be too mean)**
+**[4] MutaGen’s algorithm system: integrating stochastic, heuristic and machine learning algorithms**
 
 - Stochastic approach to generating varied compounds: the algorithm system utilizes a random_mutation() function to randomly introduce fragment addition, atom replacement and removal to simulate chemical space exploration
 - Heuristic approach to validating compounds and breaking local optima: the new compound must fulfill two rules to pass on to the next iteration:
