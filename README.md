@@ -32,5 +32,4 @@ REQUIREMENTS (pip install these):
 Future improvements:
 - Finish off the compare_model(self) function -> compares model performance against other models using lazyregression
 - More comms and docstrings
-- Data Visualizations
 - maybe a GUI
