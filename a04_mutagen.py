@@ -159,7 +159,7 @@ class MutaGen:
 
         final_df = pd.DataFrame({'Optimized SMILES Candidate': base_smiles, 'pIC50 Values': base_score})
 
-        final_df.to_csv(Path(self.cfg['predictions']) / f'{self.model_folder}_optimized_molecules.csv')
+        final_df.to_csv(Path(self.cfg['predictions']) / f'{self.mdl_nm}_optimized_molecules.csv')
 
 
     def random_mutation(self, smiles):
