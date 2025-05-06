@@ -40,7 +40,7 @@ settings:
 #=====================================
 # MODEL TRAINING SETTINGS
 #=====================================
-ml_model_type: 'RandomForestRegressor'
+ml_model_type: 'Stacking'
 # OPTIONS -> RandomForestRegressor, XGBoosting, Stacking
 
 train_test_split:
@@ -89,9 +89,12 @@ xgb_params:
 # =====================================
 # MOLECULE OPTIMIZER SETTINGS
 # =====================================
-candidates: 10
+candidates: 20
 iterations: 100
-
+target_increase: 1  # this is how much of an increase in pIC50 you are aiming to obtain from the optimized molecule
+error_threshold: -0.05   # when we hit a plateau, how much are you willing to sacrifice in performance temporarily?
+success_threshold: 0.05   # what is the minimum performance increase you will accept?
+retain_threshold: 3  # how many times the molecule can fail to improve before exploring other optimization routes
 
 # ====
 # MISC

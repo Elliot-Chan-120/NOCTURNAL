@@ -15,15 +15,17 @@ class MutaGen:
     \n Local modifications might reveal analogues with better activity, improved pharmacokinetics and reduced toxicity
     """
 
-    def __init__(self, model_name, fingerprint_setting):
+    def __init__(self, model_name):
         self.mdl_nm = model_name
-        self.fp = fingerprint_setting
 
         # Verify that all appropriate config keys and folders are present
         # Load cfg
         self.cfg = validate_config()
         self.iterations = self.cfg['iterations']
         self.candidates = self.cfg['candidates']
+
+        # Get fingerprint settings
+        self.fp = get_fingerprint(self.cfg, self.mdl_nm)
 
         # load up files
         self.model_folder = Path(self.cfg['model_folder']) / f"{self.mdl_nm}"
@@ -61,6 +63,7 @@ class MutaGen:
             raise RunModelError(f"Error reading settings file: {e}")
 
         self.settings = settings
+        self.start_score = 0
 
 
     def init_optimize(self):
@@ -75,6 +78,10 @@ class MutaGen:
         max_row = df.loc[df['pIC50'].idxmax()]
         starting_smiles = max_row['SMILES']
         starting_score = max_row['pIC50']
+
+        # this is the baseline score for our optimize control function
+        # -> seeing which molecules have an increase in pIC50 past a config-defined threshold
+        self.start_score = starting_score
 
 
         starting_mol = Chem.MolFromSmiles(starting_smiles)
@@ -101,11 +108,16 @@ class MutaGen:
         base_score = df['pIC50'].tolist()
         print("Starting SMILES")
         print(base_smiles)
+        optima_smiles = []
+        optima_scores = []
+
+        target_smiles = []
+        target_scores = []
 
         keep_counter = [0] * self.candidates
 
         for iteration in range(self.iterations):
-            print(f"Iteration {iteration} / {self.iterations}")
+            print(f"Iteration {iteration + 1} / {self.iterations}")
             # reset new_smiles list for each iteration
             print(keep_counter)
             new_smiles = []
@@ -133,17 +145,24 @@ class MutaGen:
             # Compare scores and update base molecules if better
             # check that score has been increased by a certain amount and if it passes oral bioavailability test
             for idx in range(min(len(new_score), len(base_score), len(new_smiles))):
-                if keep_counter[idx] >= 3:
-                    if (new_score[idx] - base_score[idx]) >= -0.5 and (self.lipinski_check(new_smiles[idx]) >= 0):
+                if keep_counter[idx] >= self.cfg['retain_threshold']:
+                    optima_smiles.append(new_smiles[idx]), optima_scores.append(new_score[idx])
+                    if (new_score[idx] - base_score[idx]) >= self.cfg['error_threshold'] and (self.lipinski_check(new_smiles[idx]) >= 0):
+                        # try to escape local optima and explore other paths
                         base_score[idx] = new_score[idx]
                         base_smiles[idx] = new_smiles[idx]
                         keep_counter[idx] = 0
                     else:
                         keep_counter[idx] += 1
                         print('still stuck')
-                elif (new_score[idx] - base_score[idx]) >= 0.05 and (self.lipinski_check(new_smiles[idx]) >= 2):
+
+                elif new_score[idx] - self.start_score >= self.cfg['target_increase']:
+                    target_smiles.append(new_smiles[idx]), target_scores.append(new_score[idx])
+
+                elif (new_score[idx] - base_score[idx]) >= self.cfg['success_threshold'] and (self.lipinski_check(new_smiles[idx]) >= 2):
                     base_score[idx] = new_score[idx]
                     base_smiles[idx] = new_smiles[idx]
+
                 else:
                     print('keeping original')
                     keep_counter[idx] += 1
@@ -157,9 +176,14 @@ class MutaGen:
             except Exception as e:
                 raise OptimizeError(f"Failed to write temporary smiles file: {e}")
 
-        final_df = pd.DataFrame({'Optimized SMILES Candidate': base_smiles, 'pIC50 Values': base_score})
+        final_df = pd.DataFrame({'Final SMILES Candidates': base_smiles, 'pIC50 Values': base_score})
+        optima_df = pd.DataFrame({'Optima SMILES': optima_smiles, 'pIC50 Values': optima_scores})
+        optima_df = optima_df.drop_duplicates()
+        target_df = pd.DataFrame({'Target SMILES': target_smiles, 'pIC50 Values': target_scores})
 
-        final_df.to_csv(Path(self.cfg['predictions']) / f'{self.mdl_nm}_optimized_molecules.csv')
+        final_df.to_csv(Path(self.cfg['predictions']) / f'{self.mdl_nm}_final_mutant_compounds.csv')
+        optima_df.to_csv(Path(self.cfg['predictions']) / f'{self.mdl_nm}_local_optima_compounds.csv')
+        target_df.to_csv(Path(self.cfg['predictions']) / f'{self.mdl_nm}_optimized_compounds.csv')
 
 
     def random_mutation(self, smiles):

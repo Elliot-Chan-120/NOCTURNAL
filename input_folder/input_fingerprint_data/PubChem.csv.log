@@ -1,11 +1,11 @@
 Processing Cyclohexane in VALID_test_smile.smi (1/10). 
 Processing Ethanol in VALID_test_smile.smi (2/10). 
-Processing Hexane in VALID_test_smile.smi (4/10). Average speed: 0.11 s/mol.
+Processing Hexane in VALID_test_smile.smi (4/10). Average speed: 0.10 s/mol.
 Processing Aceticacid in VALID_test_smile.smi (3/10). Average speed: 0.20 s/mol.
 Processing Benzene in VALID_test_smile.smi (5/10). Average speed: 0.08 s/mol.
-Processing hljkjkhiuhhiuhiu in VALID_test_smile.smi (6/10). Average speed: 0.06 s/mol.
-Processing Glycine in VALID_test_smile.smi (8/10). Average speed: 0.05 s/mol.
+Processing hljkjkhiuhhiuhiu in VALID_test_smile.smi (6/10). Average speed: 0.08 s/mol.
 Processing Tetrahydrofuran(THF) in VALID_test_smile.smi (7/10). Average speed: 0.05 s/mol.
-Processing compound_1 in VALID_test_smile.smi (9/10). Average speed: 0.05 s/mol.
+Processing compound_1 in VALID_test_smile.smi (9/10). Average speed: 0.04 s/mol.
+Processing Glycine in VALID_test_smile.smi (8/10). Average speed: 0.05 s/mol.
 Processing Aspirin in VALID_test_smile.smi (10/10). Average speed: 0.04 s/mol.
-Descriptor calculation completed in 0.384 secs . Average speed: 0.04 s/mol.
+Descriptor calculation completed in 0.399 secs . Average speed: 0.04 s/mol.

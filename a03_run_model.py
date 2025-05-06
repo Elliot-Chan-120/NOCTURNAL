@@ -11,14 +11,17 @@ class RunModel:
     """
     Loads up ML model of choice and predicts input smiles-formatted compounds' pIC50 for the target protein the ML model was originally trained on
     """
-    def __init__(self, model_name, input_smiles_filename, fingerprint):
+    def __init__(self, model_name, input_smiles_filename):
         self.mdl_nm = model_name
         self.inp_smi = input_smiles_filename
-        self.fp = fingerprint
+
 
         # Verify that all appropriate config keys and folders are present
         # Load cfg
         self.cfg = validate_config()
+
+        # Get fingerprint settings
+        self.fp = get_fingerprint(self.cfg, self.mdl_nm)
 
         # NAVIGATION
         # 1. folders

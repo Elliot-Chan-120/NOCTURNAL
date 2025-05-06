@@ -14,9 +14,7 @@ def demo_modelbuilder():
     ModelBuilder('test_model_1').build()
 
 def demo_runmodel():
-    RunModel("test_model_1", "test_smile", "PubChem").run_predictions()
+    RunModel("test_model_1", "test_smile").run_predictions()
 
 def demo_optimizecompound():
-    MutaGen('test_model_1', 'PubChem').init_optimize()
-
-demo_optimizecompound()
+    MutaGen('test_model_1').init_optimize()

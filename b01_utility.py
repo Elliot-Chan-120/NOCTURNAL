@@ -54,7 +54,7 @@ def validate_config():
         'ml_model_type',
         'try_limit', 'settings', 'train_test_split', 'cross_validate', 'grid_search', 'use_best_params',
         'random_forest_params',
-        'candidates', 'iterations',
+        'candidates', 'iterations', 'target_increase', 'error_threshold', 'success_threshold', 'retain_threshold',
         'data_scout_csv', 'auto_save_model', 'n_features'
     ]
 
@@ -73,3 +73,20 @@ def validate_config():
             raise ConfigurationError(f"Critical Folders Missing: {folder}")
 
     return cfg
+
+
+def get_fingerprint(config, model_name):
+    from pathlib import Path
+
+    try:
+        with open(Path(config['model_folder']) / model_name / f'{model_name}_settings.txt', 'r') as handle:
+            column = handle.readline()
+            name = column.strip().split(',')
+            item = name[0].lower()
+
+            for key in config['settings']:
+                if key.lower() in item.lower():
+                    return key
+    except Exception as e:
+        raise ConfigurationError(f"Error occurred while loading fingerprint setting: {e}")
+
