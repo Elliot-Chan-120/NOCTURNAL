@@ -1,0 +1,5 @@
+type_2_bot Final Assessment
+Optimal Hyperparameters: None
+R^2 Score: 0.6690
+RMSE: 0.7580
+MAE: 0.5293

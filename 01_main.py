@@ -5,16 +5,18 @@ from a03_run_model import RunModel
 from a04_mutagen import MutaGen
 
 def demo_datascout():
-    data_scout("Tau", 20)
+    data_scout("Diabetes", 20)
 
 def demo_dataseekprocess():
-    DataSeekProcess("Tau", 25, "PubChem").run()
+    DataSeekProcess("Diabetes", 1, "PubChem").run()
 
 def demo_modelbuilder():
-    ModelBuilder('test_model_1').build()
+    ModelBuilder('type_2_bot').build()
 
 def demo_runmodel():
-    RunModel("test_model_1", "test_smile").run_predictions()
+    RunModel("type_2_bot", "test_smile").run_predictions()
 
 def demo_optimizecompound():
     MutaGen('test_model_1').init_optimize()
+
+demo_optimizecompound()

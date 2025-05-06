@@ -155,14 +155,14 @@ class MutaGen:
                     else:
                         keep_counter[idx] += 1
                         print('still stuck')
-
+                # this means the new compound is optimized to or past the point of our goal
                 elif new_score[idx] - self.start_score >= self.cfg['target_increase']:
                     target_smiles.append(new_smiles[idx]), target_scores.append(new_score[idx])
-
+                # if the new compound meets our success threshold - it moves on to the next iteration
                 elif (new_score[idx] - base_score[idx]) >= self.cfg['success_threshold'] and (self.lipinski_check(new_smiles[idx]) >= 2):
                     base_score[idx] = new_score[idx]
                     base_smiles[idx] = new_smiles[idx]
-
+                # otherwise, if it hasn't improved but the retain count is below 3, we keep the base model and increment the counter
                 else:
                     print('keeping original')
                     keep_counter[idx] += 1
@@ -177,9 +177,12 @@ class MutaGen:
                 raise OptimizeError(f"Failed to write temporary smiles file: {e}")
 
         final_df = pd.DataFrame({'Final SMILES Candidates': base_smiles, 'pIC50 Values': base_score})
+
         optima_df = pd.DataFrame({'Optima SMILES': optima_smiles, 'pIC50 Values': optima_scores})
         optima_df = optima_df.drop_duplicates()
+
         target_df = pd.DataFrame({'Target SMILES': target_smiles, 'pIC50 Values': target_scores})
+        target_df = target_df.drop_duplicates()
 
         final_df.to_csv(Path(self.cfg['predictions']) / f'{self.mdl_nm}_final_mutant_compounds.csv')
         optima_df.to_csv(Path(self.cfg['predictions']) / f'{self.mdl_nm}_local_optima_compounds.csv')
