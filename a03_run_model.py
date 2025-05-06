@@ -45,8 +45,9 @@ class RunModel:
 
 
     def run_predictions(self):
-        # load model.predict(fingerprints.csv[model_settings])
-        # validates the smiles file, tabbing and inserting identifiers in the event none are there
+        """Predicts pIC50 values of input SMILES"""
+
+        #validates SMILES file, tabbing and inserting identifiers in the event none are there
         self.validate_smiles()
 
         # calls on fingerprinter: using the validated smiles file it gets a fingerprint file for all compounds submitted

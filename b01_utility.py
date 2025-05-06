@@ -32,6 +32,7 @@ class PaDELProcessError(Exception):
 
 
 def validate_config():
+    """Validates all keys in the config file and folder locations -> returns config"""
     from pathlib import Path
     import yaml
 
@@ -76,6 +77,7 @@ def validate_config():
 
 
 def get_fingerprint(config, model_name):
+    """Scans chosen ml model's settings and returns fingerprint key"""
     from pathlib import Path
 
     try:

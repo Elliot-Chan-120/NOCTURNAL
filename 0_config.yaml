@@ -9,7 +9,7 @@ input_fp_folder: "input_fingerprint_data"
 bioactivity_folder: "database"
 padel_xmls: "padel_fp_xmls"
 
-# [BIOACTIVITY FILES]
+# [BIOACTIVITY DATABASE FILES]
 rawdf_1: "1_raw_bioact.csv"
 labeldf_2: "2_labelled_bioact_data.csv"
 pIC50df_3: "3_pIC50_dataclass.csv"
@@ -42,6 +42,7 @@ settings:
 #=====================================
 ml_model_type: 'Stacking'
 # OPTIONS -> RandomForestRegressor, XGBoosting, Stacking
+# Brief explanation of each model in README.md
 
 train_test_split:
   test_size: 0.2
@@ -89,8 +90,8 @@ xgb_params:
 # =====================================
 # MOLECULE OPTIMIZER SETTINGS
 # =====================================
-candidates: 20
-iterations: 100
+candidates: 20    # how many copies of the starting molecule you want to undergo mutations
+iterations: 100   # how many times you want to introduce random mutations
 target_increase: 1  # this is how much of an increase in pIC50 you are aiming to obtain from the optimized molecule
 error_threshold: -0.05   # when we hit a plateau, how much are you willing to sacrifice in performance temporarily?
 success_threshold: 0.05   # what is the minimum performance increase you will accept?

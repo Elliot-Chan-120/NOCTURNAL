@@ -23,14 +23,6 @@ Added the complete codebase for NOCTURNAL: a machine learning pipeline designed 
 
 This update represents a majoroverhaul to the previous RandomForest-only prototype. It introduces a wider range of models, hyperparameter tuning, rigorous evaluation, and an original chemical optimization algorithm (MutaGen), all within a modular, fault-tolerant architecture aimed at accelerating drug discovery workflows.
 
-## Future Improvements
-alter MutaGen logic to prevent candidates from being present in the final dataframe with a lower pIC50 value
-fingerprint settings in cfg file
-automatic fingerprint setting detection in RunModel and MutaGen
-logging instead of print statements (I got carried away with everything else)
-chemical space visualization
-drug candidate visualizations
-
 
 NOCTURNAL v2.1.0 May 5th 2025
 - Added more config variables to further control MutaGen
@@ -46,4 +38,10 @@ NOCTURNAL v2.1.0 May 5th 2025
 
 - Added a function in b01_utility: get_fingerprint(config, model_name)
 	- allows classes to automatically obtain the fingerprint configuration the model was trained on. Repeatedly specifying the fingerprint method across all classes is no longer necessary. 
+
+## Future improvements: 
+- Chemical space analysis + visualizations
+- Logging instead of print statements
+- Safety analysis
+- Optimized + Optima Compound Visualization
 
