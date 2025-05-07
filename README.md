@@ -7,10 +7,10 @@
 
 ## [1] Overview - for busy readers.
 
-NOCTURNAL (v2.0.0) is a ChEMBL database navigation-aided interface for training ML models on drug-protein potency & compound molecular fingerprint analysis. Models can then be used to perform the following:
+NOCTURNAL (v2.1.0) is a ChEMBL database navigation-aided interface for training ML models on drug-protein potency & compound molecular fingerprint analysis. Models can then be used to perform the following:
 
 - Predict candidate compounds’ potencies (pIC50 values) against the respective target protein.
-- Optimize drug candidate structures by being deployed in a molecular optimization algorithm system (class MutaGen) that stochastically explores chemical space, aiming to generate improved drug candidate analogs. Heuristic techniques maintain oral bioavailability properties of all candidates produced.
+- Optimize drug candidate structures by being deployed in a molecular optimization algorithm system, (class MutaGen,) that stochastically explores chemical space, aiming to generate improved drug candidate analogs while aided with heuristic techniques to maintain oral bioavailability properties of all candidates produced.
 
 All of this occurs within a modular, fault-tolerant architecture aimed at accelerating drug discovery workflows.
 
@@ -77,7 +77,7 @@ We now have built a machine learning model that can predict ANY chemical compoun
 
 **[3] Running predictions!**
 
-Remember at the start when we saw a SMILES? Every chemical compound has a representation as a SMILES. Let’s say you’re in a lab and they want to explore how compounds ‘x’, ‘y’, ‘z’, ‘x2’, ‘y2’, ‘z2’ will perform against a certain disease, whose target protein they’ve identified and entries already exist in ChEMBL… 
+Remember at the start when we saw a SMILES string (e.g. CCC(=O)O...) ? Every chemical compound has a representation as a SMILES. Let’s say you’re in a lab and they want to explore how compounds ‘x’, ‘y’, ‘z’, ‘x2’, ‘y2’, ‘z2’ will perform against a certain disease, whose target protein they’ve identified and entries already exist in ChEMBL… 
 
 Well I’m not in a lab (yet), I’m in a basement, and I don’t have advanced chemical compounds from a lab, I have my old organic chemistry II notes from which I gathered a few random chemicals and put through an online “chemical name to SMILES converter”. I then put these SMILES into a file called “test_smile.smi” which we need to move to the “input_folder”. The file looks like this:
 
@@ -134,7 +134,7 @@ Note how the second last compound didn’t have a name originally but now has th
 This is all done automatically when you call on the class, so let’s look at what we need to pass on to it. We didn’t say test_model_1.pkl or test_smile.smi, we just used the raw names with no file suffixes. 
 
 ```python
-RunModel(model_name = “test_model_1”, input_smiles_filename = “test_smile”, fingerprint = “PubChem”).run_predictions()
+RunModel(model_name = “test_model_1”, input_smiles_filename = “test_smile”).run_predictions()
 ```
 
 What happens when we run this, is our “test_smile” is validated, then each molecule is converted into a molecular fingerprint with the “PubChem” setting and its all output into a csv file in “input_folder//input_fingerprint_data”. Next, our model reads that file, and predicts how potent each molecule is going to be against the target protein it was originally trained against: Tau. The predictions are output in a folder called “predictions” along with a bar chart visually representing the data. 
@@ -163,7 +163,6 @@ What happens when we run this, is our “test_smile” is validated, then each m
 > 
 > | Aspirin | O=C(C)Oc1ccccc1C(=O)O | 4.834832673200845 |
 
-It’s very important to keep the fingerprint setting constant throughout. I’m going to add in automatic fingerprint detection later on so the user doesn’t have to bother with constantly saying they want the setting to be “PubChem” (remind me to remove this sentence after it’s done).
 
 It should also be noted that pIC50 values of 6+ are generally strong, while 4- are pretty weak. This is just a sample of examples, but you can test it out using the actual database drugs, which can be found inside the database folder, in file “3_pIC50_dataclass.csv”. I just used these since they’re not super complicated / long.
 
@@ -171,7 +170,7 @@ Wow, in a couple lines of code (and a lot of reading, I’m sorry,) we managed t
 
 **[4] Molecular Optimization: generating new chemical compounds!**
 
-The crown jewel of this entire project. I named the class algorithm system “MutaGen” as it essentially “mutates” chemical compounds and “generates” new compound analogs, which will most likely have an increased pIC50 value by the end of the function. 
+The *crown jewel* of this entire project. I named the class algorithm system *MutaGen* as it essentially “mutates” chemical compounds and “generates” new compound analogs, which will most likely have an increased pIC50 value by the end of the function. 
 
 It should be noted that I have no clue if this exact algorithm may be novel, I developed it independently from 1-6am after a random epiphany and am unaware of any identical implementations in the field. I do intend to tweak it in the future with the purpose of optimized results. Let’s run the algorithm.
 
@@ -181,10 +180,11 @@ We call MutaGen like so:
 MutaGen(model_name = ‘test_model_1’, fingerprint_setting: ‘PubChem’).init_optimize()
 ```
 
-Essentially this algorithm uses stochastic (randomness) functions to introduce random chemical mutations in the most potent compound calculated by the ML model we named. After each random mutation, the mutant is converted into a molecular fingerprint, and has its pIC50 predicted. The relevant parameters are in the config file → “candidates” and “iterations”. 
+Essentially this algorithm uses stochastic (randomness) functions to introduce "random" chemical mutations in the most potent compound calculated by the ML model we named. After each random mutation, the mutant is converted into a molecular fingerprint, and has its pIC50 predicted. 
+The relevant parameters are in the config file → “candidates” and “iterations”. 
 
-The default is 10 candidates and 100 iterations, meaning 10 of the starting compound will undergo 100 random mutations
-
+The default is 10 candidates and 100 iterations, meaning 10 of the starting compound will undergo 100 random mutations. We also need to specify how much we would like to see an improvement in pIC50 / potency. This is in the config -> "target_increase".
+There are more keys that we can look into later.
 I put a few other conditions in there to ensure that the pIC50 increases most of the time with each iteration, and that the drug remains as orally bioavailable as possible. 
 
 This is what it looks like at the start in your text editor’s run window:
@@ -241,42 +241,59 @@ This is what it should look like in the middle.
 > 
 > O=C(O)NOCO: 5.131364864065399 -- Retain_Count = 2
 > 
-- retain count represents the amount of times the compound failed to improve, once it gets past 3, we let it be ‘worse’ for a little to explore other optimization paths
+- retain count represents the amount of times the compound failed to improve, once it gets past a certain amount specified by the user in config -> "retain_threshold", we let it be ‘worse’ for a little to explore other optimization paths
 
-The final results are output as a csv file:
+There are other config keys like "error_threshold", which is the amount of pIC50 we are willing to give up in the molecule once the retain_count has hit our "retain_threshold".
+We also have "succes_threshold", which determines what the minimum pIC50 improvement we want is. If the next molecule iteration doesn't improve by at least that amount, we don't accept it.
 
-> Optimized SMILES Candidate            pIC50 values
+The algorithm saves three types of information upon being run and outputs them as these csv files: The examples below are just samples of output files from a test run. There are two ml model test run outputs as of NOCTURNAL v2.1.0 in the predictions folder.
+
+1. "[model_name]_final_mutant_compounds.csv": compounds that are at the end, and resulted from the 100 iterations
+> ,Final SMILES Candidates,pIC50 Values
 > 
+> 0,CO.O=CO,5.106306685986625
 > 
+> 1,CC(C)C(N)(CCO)C(N)=O,5.956911333404438
 > 
-> | C.O.O=CO.OS | 5.106306685986625 |
+> 2,O=C(O)CC(S)(NO)C(=O)SS,5.868723312635107
 > 
-> | --- | --- |
+> 3,CCOCC(C(=O)S)C(C)(C)N,5.802392289180568
 > 
-> | CCCC(CO)C(N)COCF.F.O | 5.692708424736482 |
+> 4,NC(C=O)C(O)F,5.485262821663015
+
+
+2. "[model_name]_local_optima_compounds.csv": compounds that were deemed "local optima" and were retained 'x' times, since they could not be improved that amount of times.
+> ,Optima SMILES,pIC50 Values
 > 
-> | C.CC(CO)CCN.Cl.Cl.N.S | 5.248891743061632 |
+> 0,CCC(=O)O,5.078708666118247
 > 
-> | CCN.CCNC(=O)O.N=O.NC=O | 5.363326743060715 |
+> 1,CCO,4.823817551315969
 > 
-> | COC(=O)CF.NOO.OCS.S | 4.99415264727772 |
+> 2,CC(C)=O,4.938633251407703
 > 
-> | O=C(O)N(F)S | 5.15914139974095 |
+> 3,COC(C)=O,4.99415264727772
 > 
-> | FS.N.NN(N)F.NO | 4.890303990578768 |
-> 
-> | C.CCC(N)C(O)OC(=O)CCN.O.O | 5.737677841851358 |
-> 
-> | CCN.CCO.CO.CO.N.O.O=C(O)O.S.S.S | 5.1189746377138645 |
-> 
-> | CN.COCN.F.N.O | 4.346049170437902 |
+> 5,O=C(O)CO,5.090269987059463
 > 
 
-I know, not all of them are optimized, 2/10 have a lower pIC50 than the initial 4.9 something. However, the rest are greater, and if we had more candidates / more iterations / both, the chances of obtaining a more optimized compound is greater!
+
+3. "[model_name]_optimized_compounds.csv": compounds that met / exceeded the target pIC50 increase we set. I called the first column "Target SMILES" since future research could target those optimized chemicals.
+> ,Target SMILES,pIC50 Values
+> 
+> 0,NCCC(OC(=O)S)C(O)(NO)NC(CN)C(F)C(=O)O,6.090577331414501
+> 
+> 1,NC(CO)C(NC(O)(NO)C(CCNO)OC(=O)S)C(F)C(=O)O,6.100660583195964
+> 
+> 2,NCC(NC(O)(NO)C(CCNO)OC(=O)S)C(F)C(=O)O,6.090577331414501
+> 
+> 3,F.NCCNC(O)(NO)C(CCNO)OC(=O)S.O=CO,6.06420954812738
+> 
+> 4,NCC(NC(NO)C(CCNO)OC(=O)S)C(F)C(=O)O,6.090577331414501
+
 
 ## **That marks the end :)**
 
-I just took us through one run, from peering into a chemical database, to generating chemical compounds optimized towards a target disease protein of our choice! 
+I just took us through one run, from peering into a chemical database, to generating a massive list of chemical compounds optimized towards a target disease protein of our choice! 
 
 P.S. If there’s anything wrong with the project or any information that could be clarified, I would be very happy to learn as I’m fairly new to programming and have less than a month’s experience with machine learning.
 
@@ -289,10 +306,11 @@ This section goes deeper into the core algorithms and background processes that 
 - The 0_config.py file allows for customizability of a lot of core processes, like how many attempts one wishes to attempt at making molecular fingerprints as well as default parameters for training future machine learning models
 - Furthermore, file b01_utility.py contains many custom error classes that help pinpoint the user towards the source of any mishaps during runs. E.g. ModelBuilderError, RunModelError .etc
 - The validate_config() function in b01_utility is called upon every single class instantiation throughout the entire pipeline: it validates that all the keys in the config file, and all the required folders are present in their respective places. If those conditions are fulfilled, it loads the config file. Otherwise a custom “ConfigurationError” is raised.
+- The get_fingerprint() function allows for automatic fingerprint type detection upon properly selecting an ML model for running or optimization.
 
 **[2] Navigation-aided approach**
 
-- data_scout()’s aim is to facilitate decision making by automatically sorting data indices by largest IC50 data entries to lowest, and it takes this one step further by outputting data quality information, such as where the data came from. This is relevant since its generally better to train models on larger amounts of higher quality data.
+- data_scout()’s aim is to facilitate decision-making by automatically sorting data indices by largest IC50 data entries to lowest, and it takes this one step further by outputting data quality information, such as where the data came from. This is relevant since its generally better to train models on larger amounts of higher quality data.
 
 **[3] ModelBuilder’s modular feature organization**
 
@@ -304,22 +322,22 @@ This section goes deeper into the core algorithms and background processes that 
 
 - Stochastic approach to generating varied compounds: the algorithm system utilizes a random_mutation() function to randomly introduce fragment addition, atom replacement and removal to simulate chemical space exploration
 - Heuristic approach to validating compounds and breaking local optima: the new compound must fulfill two rules to pass on to the next iteration:
-    1. It must have a pIC50 value improvement greater than 0.05 (will make this configurable)
+    1. It must have a pIC50 value improvement greater than a specified configurable amount (default = 0.05)
     2. It must fulfill minimum 2/4 Lipinski rules of oral bioavailability
-    - If it fails to meet one of these, it does not make it through to the next iteration and the previous is kept. A “keep_counter” integer associated with each candidate compound is incremented by +1. When this number reaches 3, the rules to pass on change, allowing mutations resulting in negative pIC50 changes down to -0.5 and 0+ lipinski criteria fulfilled. The aim of this is to explore other chemical space orientations and escape plateaus in pIC50.
+    - If it fails to meet one of these, it does not make it through to the next iteration and the previous is kept. A “keep_counter” integer associated with each candidate compound is incremented by +1. When this number reaches 3, the molecule is deemed an "optima" compound, and the rules to pass on change, allowing mutations resulting in negative pIC50 changes down to -0.5 and 0+ lipinski criteria fulfilled. The aim of this is to explore other chemical space orientations and escape optimization plateaus.
 - Mutations are guided by a curated set of bioactive fragments instead of random atoms, improving the chemical realism of generated structures.
 - Chemical Validity Filters: all mutations are first validated using valence checks and RDKit sanitizations. Fragment size filters are also applied to remove unstable or irrelevant candidates.
 - Adaptive Logic to protect compounds: Short SMILES are protected from being destabilized further or eliminated by removal mutations, and hydrogen atoms are never used as connection points so valencies are constantly in check.
 - P.S. this is definitely still a work in progress, I have a list of things I would definitely change to improve its performance that is already in the works.
+- Catches all molecules that met or surpassed a desired improvement in pIC50, and those that were deemed local optima i.e. could not improve after a certain amount of tries on top of the final candidates. Outputs all as 3 separate dataframes for targeted analysis.
+
 
 ## Future Improvements
 
-- alter MutaGen logic to prevent candidates from being present in the final dataframe with a lower pIC50 value
-- fingerprint settings in cfg file
-- automatic fingerprint setting detection in RunModel and MutaGen
 - logging instead of print statements (I got carried away with everything else)
 - chemical space visualization
 - drug candidate visualizations
+- logging instead of print statements
 
 ## Prerequisites and Dependencies
 
