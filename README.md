@@ -329,7 +329,8 @@ This section goes deeper into the core algorithms and background processes that 
 - Chemical Validity Filters: all mutations are first validated using valence checks and RDKit sanitizations. Fragment size filters are also applied to remove unstable or irrelevant candidates.
 - Adaptive Logic to protect compounds: Short SMILES are protected from being destabilized further or eliminated by removal mutations, and hydrogen atoms are never used as connection points so valencies are constantly in check.
 - P.S. this is definitely still a work in progress, I have a list of things I would definitely change to improve its performance that is already in the works.
-- Catches all molecules that met or surpassed a desired improvement in pIC50, and those that were deemed local optima i.e. could not improve after a certain amount of tries on top of the final candidates. Outputs all as 3 separate dataframes for targeted analysis.
+- Catches all molecules that met or surpassed a desired improvement in pIC50, compounds that were deemed local optima i.e. could not improve after a certain amount of tries, on top of the final candidates.
+    - Outputs all as 3 separate dataframes for targeted analysis.
 
 
 ## Future Improvements
