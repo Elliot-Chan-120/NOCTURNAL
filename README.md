@@ -185,7 +185,7 @@ The relevant parameters are in the config file → “candidates” and “itera
 
 The default is 10 candidates and 100 iterations, meaning 10 of the starting compound will undergo 100 random mutations. We also need to specify how much we would like to see an improvement in pIC50 / potency. This is in the config -> "target_increase".
 There are more keys that we can look into later.
-I put a few other conditions in there to ensure that the pIC50 increases most of the time with each iteration, and that the drug remains as orally bioavailable as possible. 
+I put a few other conditions in there (discussed below) to ensure that the pIC50 increases most of the time with each iteration, and that the drug remains as orally bioavailable as possible. 
 
 This is what it looks like at the start in your text editor’s run window:
 
