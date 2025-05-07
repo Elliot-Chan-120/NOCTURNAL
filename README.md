@@ -177,7 +177,7 @@ It should be noted that I have no clue if this exact algorithm may be novel, I d
 We call MutaGen like so:
 
 ```python
-MutaGen(model_name = ‘test_model_1’, fingerprint_setting: ‘PubChem’).init_optimize()
+MutaGen(model_name = ‘test_model_1’).init_optimize()
 ```
 
 Essentially this algorithm uses stochastic (randomness) functions to introduce "random" chemical mutations in the most potent compound calculated by the ML model we named. After each random mutation, the mutant is converted into a molecular fingerprint, and has its pIC50 predicted. 
