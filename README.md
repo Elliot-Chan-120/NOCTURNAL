@@ -44,7 +44,7 @@ IC50 = half-maximal inhibitory concentration. In other words: What concentration
 
 pIC50 = -log_10(IC50) → a potency metric. Higher = more potent, note that IC50 is in Molarity (M)
 
-Data indices (INDEX['x]) are automatically ranked according to number of IC50 entries, which we will later convert into pIC50, a metric for drug potency. What we see above is the first 4 results. Each entry contains a chemical compound that was tested against that target protein, and had its IC50 value recorded. With some more data processing that occurs in the next class, we can obtain their chemical formulas as a string called SMILES, which looks like this: “O=C1Cc2c([nH]c3ccc(Br)cc23)-c2cc(Br)ccc2N1” - CHEMBL98360
+Data indices (INDEX[X]) are automatically ranked according to number of IC50 entries, which we will later convert into pIC50, a metric for drug potency. What we see above is the first 4 results. Each entry contains a chemical compound that was tested against that target protein, and had its IC50 value recorded. With some more data processing that occurs in the next class, we can obtain their chemical formulas as a string called SMILES, which looks like this: “O=C1Cc2c([nH]c3ccc(Br)cc23)-c2cc(Br)ccc2N1” - CHEMBL98360
 
 **[2] Data Processing and Model Training**
 
