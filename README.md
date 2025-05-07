@@ -244,7 +244,7 @@ This is what it should look like in the middle.
 - retain count represents the amount of times the compound failed to improve, once it gets past a certain amount specified by the user in config -> "retain_threshold", we let it be ‘worse’ for a little to explore other optimization paths
 
 There are other config keys like "error_threshold", which is the amount of pIC50 we are willing to give up in the molecule once the retain_count has hit our "retain_threshold".
-We also have "succes_threshold", which determines what the minimum pIC50 improvement we want is. If the next molecule iteration doesn't improve by at least that amount, we don't accept it.
+We also have "success_threshold", which determines what the minimum pIC50 improvement we want is. If the next molecule iteration doesn't improve by at least that amount, we don't accept it.
 
 The algorithm saves three types of information upon being run and outputs them as these csv files: The examples below are just samples of output files from a test run. There are two ml model test run outputs as of NOCTURNAL v2.1.0 in the predictions folder.
 
