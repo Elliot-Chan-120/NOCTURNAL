@@ -54,7 +54,7 @@ Let’s say I wanted to use the first option, which is data index number ‘25�
 DataSeekProcess(target_protein = “Tau”, selected_target_index = 25, fingerprint_setting “PubChem”).run()
 ```
 
-“PubChem” refers to the specific settings that we use for molecular fingerprint generation. If you didn’t understand that, welcome to the club. Joking. Think of a molecular fingerprint as a way to represent chemical structures as 1’s and 0’s (that’s basically it). There’s various settings in the “PADEL SETTINGS” → “settings” section of the config file which, depending on the name chosen, will affect how each molecular substructure is encoded in the final dataframe which we build our machine learning models on. 
+“PubChem” refers to the specific settings that we use for molecular fingerprint generation. If you didn’t understand that, welcome to the club. Joking. Think of a molecular fingerprint as a way to represent chemical structures as 1’s and 0’s (that’s basically it). There’s various fingerprinting settings that we can select in the “PADEL SETTINGS” → “settings” section of the config file, which will affect how each molecular substructure is encoded in the final dataframe, which we build our machine learning models on. 
 
 Once it’s done running, the “database” folder will have generated a bunch of files, which you don’t need to worry about for now. What DataSeekProcess has done is essentially created a DataFrame (CSV file) containing each compound’s molecular fingerprints and their potencies / pIC50 values.
 
