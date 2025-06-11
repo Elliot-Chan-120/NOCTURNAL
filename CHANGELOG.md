@@ -45,3 +45,14 @@ NOCTURNAL v2.1.0 May 5th 2025
 - Safety analysis
 - Optimized + Optima Compound Visualization
 
+NOCTURNAL v2.2.0 June 11th 2025
+Improvements to the MutaGen algorithm
+
+- modified adaptive escape mechanism: success criteria now becomes more strict the more time the molecule fails to increase in potency -> produces fewer candidates but properly ensures that they are of higher quality.
+
+- added more mutation fragment possibilities: added some functional groups, carbon chains and Cl + Br
+
+- enhanced fragment handling: in the event of a fragmented molecule, the largest fragment alone is selected for the next round of predictions. This also clashed with a chemical space visualization module I was working on, as Tanimoto similarity calculations involved some processes that required intact molecules that were not overly simple (needed a minimum atom # and bond #).
+
+- fixed / added addition step of optimized molecules to next iteration: the previous version 'quit' exploring once an optimized molecule was found by not letting it in to the next iteration. So the algorithm was basically limiting itself more up until now.
+
