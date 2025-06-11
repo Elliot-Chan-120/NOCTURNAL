@@ -11,7 +11,7 @@ from b01_utility import *
 class MutaGen:
     """
     Generates an optimized molecule based on the results gathered from the previous class' results
-    \n Essentially explores nearby chemical space to find alternative and optimal solutions
+    \n Performs both chemical space exploration and drug optimization, aiming to generate improved drug candidates optimized against target protein with which the ML model was trained on
     \n Local modifications might reveal analogues with better activity, improved pharmacokinetics and reduced toxicity
     """
 
@@ -100,9 +100,11 @@ class MutaGen:
     def optimize_control(self):
         """
         After having everything validated by optimize, it loads up the files and runs random mutation functions on a batch of SMILES
-        \n After mutating -> run pIC50 predictions using a previously saved machine learning model
+        \n After mutating -> run pIC50 predictions using the chosen machine learning model
         \n Includes decision-making for mutation choices and progress based on status of current SMILES and score plateaus
         """
+        # update this? lots of nesting which isn't easy to follow
+
         df = pd.read_csv(self.initial_smiles, sep='\t', names=['SMILES', 'pIC50'])
         base_smiles = df['SMILES'].tolist()
         base_score = df['pIC50'].tolist()
@@ -127,7 +129,7 @@ class MutaGen:
                 mutant = self.random_mutation(base_smiles[idx])
                 new_smiles.append(mutant)
 
-            # Write Mutations into New smile file
+            # Write Mutations into new smile file
             try:
                 with open(self.mutated_smiles, 'w') as f:
                     for i in range(self.candidates):
@@ -143,22 +145,28 @@ class MutaGen:
             new_score = self.predict()
 
             # Compare scores and update base molecules if better
-            # check that score has been increased by a certain amount and if it passes oral bioavailability test
+
+            # check that score has been increased by a certain amount and passes the oral bioavailability test
             for idx in range(min(len(new_score), len(base_score), len(new_smiles))):
+                # this means that the compound has failed to improve 'x' amount of times and is now considered a local optima
                 if keep_counter[idx] >= self.cfg['retain_threshold']:
                     optima_smiles.append(new_smiles[idx]), optima_scores.append(new_score[idx])
-                    if (new_score[idx] - base_score[idx]) >= self.cfg['error_threshold'] and (self.lipinski_check(new_smiles[idx]) >= 0):
-                        # try to escape local optima and explore other paths
+                    # ADAPTIVE OPTIMA ESCAPE MECHANISMS
+                    # continuously decrease the error threshold by an additional fraction of its original value depending on keep_counter
+                    # stricten up the requirements to filter out molecules that retain some oral bioavailability and will produce greater improvements
+                    if (new_score[idx] - base_score[idx]) >= (self.cfg['error_threshold'] + (self.cfg['error_threshold'] * (1/keep_counter[idx]))) and (self.lipinski_check(new_smiles[idx]) > 0):
                         base_score[idx] = new_score[idx]
                         base_smiles[idx] = new_smiles[idx]
                         keep_counter[idx] = 0
                     else:
                         keep_counter[idx] += 1
                         print('still stuck')
-                # this means the new compound is optimized to or past the point of our goal
+                # this means the new compound is optimized to or past the point of our goal -> ADD IT TO THE LIST!
                 elif new_score[idx] - self.start_score >= self.cfg['target_increase']:
                     target_smiles.append(new_smiles[idx]), target_scores.append(new_score[idx])
-                # if the new compound meets our success threshold - it moves on to the next iteration
+                    base_score[idx] = new_score[idx]
+                    base_smiles[idx] = new_smiles[idx]
+                # if the new compound meets our success threshold - added moving it to the next iteration for increased exploration around those molecules
                 elif (new_score[idx] - base_score[idx]) >= self.cfg['success_threshold'] and (self.lipinski_check(new_smiles[idx]) >= 2):
                     base_score[idx] = new_score[idx]
                     base_smiles[idx] = new_smiles[idx]
@@ -181,12 +189,12 @@ class MutaGen:
         optima_df = pd.DataFrame({'Optima SMILES': optima_smiles, 'pIC50 Values': optima_scores})
         optima_df = optima_df.drop_duplicates()
 
-        target_df = pd.DataFrame({'Target SMILES': target_smiles, 'pIC50 Values': target_scores})
-        target_df = target_df.drop_duplicates()
+        optimized_df = pd.DataFrame({'Target SMILES': target_smiles, 'pIC50 Values': target_scores})
+        optimized_df = optimized_df.drop_duplicates()
 
         final_df.to_csv(Path(self.cfg['predictions']) / f'{self.mdl_nm}_final_mutant_compounds.csv')
         optima_df.to_csv(Path(self.cfg['predictions']) / f'{self.mdl_nm}_local_optima_compounds.csv')
-        target_df.to_csv(Path(self.cfg['predictions']) / f'{self.mdl_nm}_optimized_compounds.csv')
+        optimized_df.to_csv(Path(self.cfg['predictions']) / f'{self.mdl_nm}_optimized_compounds.csv')
 
 
     def random_mutation(self, smiles):
@@ -194,6 +202,7 @@ class MutaGen:
         Randomly Mutates a SMILES
         \n Flow: input SMILES -> converted to mol item -> mol item is mutated -> converted back to SMILES and returned
         """
+        # convert the smiles into a mol object which rdkit can then handle and mutate
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             return smiles
@@ -201,6 +210,7 @@ class MutaGen:
         mutated_mol = None
 
         atom_indices = list(range(mol.GetNumAtoms()))
+        bond_num = mol.GetNumBonds()
         if not atom_indices:
             return Chem.MolToSmiles(mol)
 
@@ -211,28 +221,42 @@ class MutaGen:
             Chem.MolFromSmiles('O'),
             Chem.MolFromSmiles('N'),
             Chem.MolFromSmiles('F'),
-            Chem.MolFromSmiles('C(=O)O'),
             Chem.MolFromSmiles('CO'),
             Chem.MolFromSmiles('S'),
+
+            # functional groups
+            Chem.MolFromSmiles('C(=O)O'),
+            Chem.MolFromSmiles('S(=O)(=O)N'),
+            Chem.MolFromSmiles('C(=O)'),
+            Chem.MolFromSmiles('C#N'),
+            Chem.MolFromSmiles('C(F)(F)F'),
+            Chem.MolFromSmiles('OC'),
+
+            # More
+            Chem.MolFromSmiles('Cl'),
+            Chem.MolFromSmiles('Br'),
+            Chem.MolFromSmiles('C(C)C'),
+            Chem.MolFromSmiles('C(C)(C)C'),
         ]
 
         if len(smiles) >= 3:
+            # default choices, normal molecule
             mutation_type = random.choice(["add_group", "replace", "remove"])
+        elif len(atom_indices) <= 2 or bond_num == 0:
+            # force additions for very small molecules or single atoms to protect them from being deleted
+            mutation_type = "add_group"
         else:
             mutation_type = random.choice(["add_group", "replace"])
 
         if mutation_type == "add_group":
             insert_group = random.choice(list(frags))
-
             idx = random.choice(atom_indices)
             atom = mol_edit.GetAtomWithIdx(idx)
             if atom.GetSymbol() == "H" or not self.valence_check(atom):
                 return Chem.MolToSmiles(mol)  # don't bind Hydrogen
-
             combination = Chem.CombineMols(mol_edit, insert_group)
             mole = Chem.EditableMol(combination)
             mol_atoms = mol_edit.GetNumAtoms()
-
             mole.AddBond(idx, mol_atoms, Chem.BondType.SINGLE)
             mutated_mol = mole.GetMol()
 
@@ -264,23 +288,37 @@ class MutaGen:
             mol_edit.RemoveAtom(idx)
             mutated_mol = mol_edit.GetMol()
 
-
         try:
             Chem.SanitizeMol(mutated_mol)
             mutated_smiles = Chem.MolToSmiles(mutated_mol)
 
+            # enhanced fragment handling
             if "." in mutated_smiles:
                 frags = mutated_smiles.split('.')
-                # keep larget fragment
+                # keep largest fragment
                 largest_fragment = max(frags, key=len)
-                if len(largest_fragment) < 3:
-                    return largest_fragment
+
+                frag_mol = Chem.MolFromSmiles(largest_fragment)
+                if (len(largest_fragment) < 3 or  # reasonable complexity
+                        frag_mol is None or  # make sure it's not a single atom or is minimal
+                        frag_mol.GetNumAtoms() <= 1 or
+                        frag_mol.GetNumBonds() == 0):
+                    return smiles  # return original if the fragment did not pass
+                else:
+                    mutated_smiles = largest_fragment
+                    mutated_mol = Chem.MolFromSmiles(mutated_smiles)
+
+            # regular check
+            if (mutated_mol is None or
+                mutated_mol.GetNumAtoms() <= 2 or
+                mutated_mol.GetNumBonds() == 0):
+                return smiles  # return original if mutation did not pass
+
+            return mutated_smiles
 
         except Exception as e:
             print(f"{smiles} failed to be sanitized, keeping original: {e}")
             return smiles   # return the original if sanitization fails
-
-        return mutated_smiles
 
 
     def fingerprinter(self):
@@ -348,7 +386,7 @@ class MutaGen:
     @staticmethod
     def lipinski_check(smiles):
         """
-        Generates dataframe containing relevant information on lipinski rules
+        Returns number of lipinski rules that were passed
         \n mol. weight, octanol water part., H-bond donors and acceptors
         """
         mol = Chem.MolFromSmiles(smiles)
