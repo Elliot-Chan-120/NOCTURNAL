@@ -1,11 +1,18 @@
 import requests
+
 from chembl_webresource_client.new_client import new_client
+
 import pandas as pd
+
 import numpy as np
+
 from rdkit import Chem
 from rdkit.Chem import Descriptors, Lipinski
+
 from padelpy import padeldescriptor
+
 from pathlib import Path
+
 from b01_utility import *
 
 
@@ -25,7 +32,7 @@ class DataSeekProcess:
 
         # NAVIGATION
         # database folder
-        self.bioact_folder = Path(self.cfg['bioactivity_folder'])
+        self.bioact_folder = Path(self.cfg['database'])
 
         # static files
         self.rawdf_path = self.bioact_folder / self.cfg['rawdf_1']

@@ -10,9 +10,16 @@ class RunModelError(Exception):
     """Raised when there is an error with RunModel"""
     pass
 
-class OptimizeError(Exception):
-    """Raised when there is an error with OptimizeMolecule"""
+class MutaGenError(Exception):
+    """Raised when there is an error with MutaGen"""
     pass
+
+class CSNDataError(Exception):
+    """Raised when there is an error with data processing for the chemical space network"""
+    pass
+
+class ChemNetError(Exception):
+    """Raised when there is an error with the chemical network visualization module"""
 
 class ConfigurationError(Exception):
     """Raised when there is an error with config"""
@@ -49,23 +56,24 @@ def validate_config():
 
     # validate config file for all of its critical keys
     required_keys = [
-        'predictions', 'bioactivity_folder', 'input_folder', 'assessments', 'model_folder', 'input_fp_folder',
-        'padel_xmls',
+        'predictions', 'database', 'input_folder', 'assessments', 'model_folder', 'input_fp_folder',
+        'padel_xmls', 'network_folder',
         'rawdf_1', 'labeldf_2', 'pIC50df_3', 'smile_data', 'fp_output', 'fingerprintdf_4',
         'ml_model_type',
         'try_limit', 'settings', 'train_test_split', 'cross_validate', 'grid_search', 'use_best_params',
         'random_forest_params',
         'candidates', 'iterations', 'target_increase', 'error_threshold', 'success_threshold', 'retain_threshold',
-        'data_scout_csv', 'auto_save_model', 'n_features'
+        'data_scout_csv', 'auto_save_model', 'n_features',
+        'colorscale', 'transparent_nodes', 'node_toggle', 'label_toggle', '2D_molecules', 'node_size'
     ]
 
     for key in required_keys:
         if key not in cfg:
             raise ConfigurationError(f"Missing Required Configuration Key: {key}")
 
-    # 2. Now access this config and make sure all the necessary files are there
+    # 2. Now access this config and make sure all the necessary starting folders are there
     dir_keys = ['predictions', 'input_folder', 'assessments',
-                'model_folder', 'bioactivity_folder', 'padel_xmls']
+                'model_folder', 'database', 'padel_xmls']
 
     required_dirs = [cfg[k] for k in dir_keys]
 
@@ -91,4 +99,3 @@ def get_fingerprint(config, model_name):
                     return key
     except Exception as e:
         raise ConfigurationError(f"Error occurred while loading fingerprint setting: {e}")
-

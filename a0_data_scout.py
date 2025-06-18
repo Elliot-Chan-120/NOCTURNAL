@@ -41,9 +41,11 @@ def data_scout(target_input, size):
     bioact_list.sort(key=lambda x: x[2], reverse=True)
 
     if cfg["data_scout_csv"] is True:
+        path = Path('database') / "Target_Data"
+        path.mkdir(exist_ok=True)
         scout_df = pd.DataFrame(bioact_list[:size],
                                 columns=[f"{target_input}_Index", "Selected_Target", "IC50_Entries", "Target_Type", "Organism"])
-        scout_df.to_csv(Path(cfg["bioactivity_folder"]) / f"{target_input}_targets.csv",
+        scout_df.to_csv(path / f"{target_input}_targets.csv",
                         index=False)
 
     for indx, selected_target, data_pts, t_type, t_organism in bioact_list[:size]:
