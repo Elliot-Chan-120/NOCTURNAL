@@ -76,7 +76,7 @@ class MutaGen:
         try:
             df  = pd.read_csv(self.prediction_file)
         except Exception as e:
-            raise OptimizeError(f"Error loading prediction file: {e}")
+            raise MutaGenError(f"Error loading prediction file: {e}")
 
         max_row = df.loc[df['pIC50'].idxmax()]
         starting_smiles = max_row['SMILES']
@@ -97,7 +97,7 @@ class MutaGen:
             # optimize the highest scoring SMILES chemical
             self.optimize_control()
         else:
-            raise OptimizeError(f"Starting molecule is invalid")
+            raise MutaGenError(f"Starting molecule is invalid")
 
 
     def optimize_control(self):
@@ -138,7 +138,7 @@ class MutaGen:
                     for i in range(self.candidates):
                         f.write(f"{new_smiles[i]}\n")
             except Exception as e:
-                raise OptimizeError(f"Failed to write temporary smiles file: {e}")
+                raise MutaGenError(f"Failed to write temporary smiles file: {e}")
 
             # generate fingerprints for the new molecules
             # fills in missing columns with 0s and reorders them to match training method
@@ -185,7 +185,7 @@ class MutaGen:
                     for i in range(self.candidates):
                         f.write(f"{base_smiles[i]}\t{base_score[i]}\n")
             except Exception as e:
-                raise OptimizeError(f"Failed to write temporary smiles file: {e}")
+                raise MutaGenError(f"Failed to write temporary smiles file: {e}")
 
         final_df = pd.DataFrame({'Final SMILES Candidates': base_smiles, 'pIC50 Values': base_score})
 
@@ -400,7 +400,7 @@ class MutaGen:
             h_donors = Lipinski.NumHDonors(mol)
             h_acceptors = Lipinski.NumHAcceptors(mol)
         except Exception as e:
-            raise OptimizeError(f"Error calculating Lipinski Descriptors: {e}")
+            raise MutaGenError(f"Error calculating Lipinski Descriptors: {e}")
 
         rules_passed = 0
         if mw <= 500: rules_passed += 1
