@@ -61,46 +61,26 @@ class ChemNet:
         self.node_opacity = 0 if self.cfg['transparent_nodes'] is True else 1
         self.node_size = 10 if self.cfg['node_toggle'] is True else 0
         self.label_size = 10 if self.cfg['label_toggle'] is True else 0
+        if not isinstance(self.cfg['colorscale'], str):
+            raise ChemNetError("Invalid colorscale configuration")
 
         # we'll need this later
         self.node_count = None
 
         # make folder within prediction / result file to upload html files of CSN graph
-        self.upload_path = Path(self.cfg['predictions']) / f"{self.model_name}_CSN_graphs"
-        self.upload_path.mkdir(parents=True, exist_ok=True)
+        self.upload_folder = Path(self.cfg['predictions']) / f"{self.model_name}_CSN_graphs"
+        self.upload_folder.mkdir(parents=True, exist_ok=True)
+        self.savepath = self.upload_folder / f"{self.model_name}_{self.network_type}_CSN_graph.html"
 
     def graph_data(self):
         """Determine greatest % of subset data to display"""
-        try:
-            subsets_filepath = Path(self.storage) / f"{self.model_name}_{self.network_type}_subsets.pkl"
-            nodes_filepath = Path(self.storage) / f"{self.model_name}_{self.network_type}_node_data.pkl"
+        subsets_filepath = Path(self.tandata_path) / f"{self.model_name}_{self.network_type}_subsets.pkl"
+        nodes_filepath = Path(self.tandata_path) / f"{self.model_name}_{self.network_type}_node_data.pkl"
 
-            # validate files exist and aren't empty / are readable
-            for filepath in [subsets_filepath, nodes_filepath]:
-                if not filepath.exists():
-                    raise ChemNetError(f"Required data file not found: {filepath}")
-                if filepath.stat().st_size == 0:
-                    raise ChemNetError(f"Data file is empty: {filepath}")
+        # safely load pickle files - handles file.exist and st_size
+        subsets = self.pkl_safeload(subsets_filepath)
+        node_data = self.pkl_safeload(nodes_filepath)
 
-            # load pkl files with error handling
-            try:
-                with open(subsets_filepath, 'rb') as subset_file:
-                    subsets = pickle.load(subset_file)
-            except (pickle.PickleError, EOFError) as e:
-                raise ChemNetError(f"pkl error loading subsets file: {subsets_filepath} | {e}")
-            except Exception as e:
-                raise ChemNetError(f"Unexpected error loading subsets file: {subsets_filepath} | {e}")
-
-            try:
-                with open(nodes_filepath, 'rb') as nodes_file:
-                    node_data = pickle.load(nodes_file)
-            except (pickle.PickleError, EOFError) as e:
-                raise ChemNetError(f"pkl error loading subsets file: {nodes_filepath} | {e}")
-            except Exception as e:
-                raise ChemNetError(f"Unexpected error loading subsets file: {nodes_filepath} | {e}")
-
-        except Exception as e:
-            raise ChemNetError(f"Unexpected error occurred during file validation: {e}")
 
         # handle empty / insufficient data
         if not subsets:
@@ -170,6 +150,8 @@ class ChemNet:
             # [[DISTANCING BETWEEN NODES HERE]]
             # network plot -> determine how close or far each node is going to be from each other
             pos = nx.spring_layout(G1, self.k_dist, seed=40)
+        except nx.NetworkXPointlessConcept:
+            raise ChemNetError(f"Could not create layout for {self.network_type} compounds")
         except nx.NetworkXError as e:
             raise ChemNetError(f"Network layout calculation failed: {e}")
         except Exception as e:
@@ -186,6 +168,7 @@ class ChemNet:
 
         cmin, cmax = 0, 100
         cmap = px.colors.sample_colorscale(self.cfg['colorscale'], np.linspace(0, 1, 100))
+
 
         # [[MAKE EDGE TRACES]]
         edge_x = []
@@ -208,6 +191,7 @@ class ChemNet:
             mode='lines'
         )
 
+
         # [[MAKE NODES AND HOVER TEXT]]
         node_x = []
         node_y = []
@@ -215,6 +199,8 @@ class ChemNet:
         node_colours = []
         node_hover_text = []
         hover_image = {}
+
+        failed_images = 0
 
         # make nodes - god this is hard
         self.node_count = len(G1.nodes())
@@ -235,16 +221,29 @@ class ChemNet:
             # generate molecule image for hover-text
             mol_image = self.molecular_image(smile, normalized_custom_rgb, size=(250, 250))
 
+            # handle missing molecular images
+            if mol_image is None:
+                failed_images += 1
+            if failed_images > len(G1.nodes()) * 0.1: # if more than 10% of molecules fail to generate images...
+                print(f"Warning: {failed_images} molecular images failed to generate")
+
+
             # [[BUILD HOVER TEXT TO BE DISPLAYED AND 2D MOL IMAGES]]
             if mol_image:
                 hover_image[smile] = mol_image
                 hover_text = f"""
-                <b>SMILES</b> {smile}<br>
-                <b>pIC50:</b> {data["pIC50"]:.4f}<br>
-                <b>Percentile:</b> {color_values[i]:.4f}%<br>"""
-            else:
+                                <b>SMILES</b> {smile}<br>
+                                <b>pIC50:</b> {data["pIC50"]:.4f}<br>
+                                <b>Percentile:</b> {color_values[i]:.4f}%<br>"""
+                node_hover_text.append(hover_text)
+            else:   # if there is no molecular image -> hover text still but with a note saing image generation failed
+                hover_text = f"""
+                                <b>SMILES</b> {smile}<br>
+                                <b>pIC50:</b> {data["pIC50"]:.4f}<br>
+                                <b>Percentile:</b> {color_values[i]:.4f}%<br>
+                                <b>Note:</b> Image generation failed<br>"""
+                node_hover_text.append(hover_text)
                 raise ValueError("No structure detected, analyze dataset and see if a molecule is missing")
-            node_hover_text.append(hover_text)
 
             molecule_size = self.adaptive_sizing(pos)
 
@@ -296,7 +295,17 @@ class ChemNet:
                             yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)
                         ))
 
-        plot(fig, auto_open=True)
+        # handle errors in saving file
+        try:
+            plot(fig, filename=str(self.savepath) , auto_open=True)
+
+        except Exception as e:  # handle output errors -> backup file location
+            try:
+                fallback_savepath = Path.cwd() / f"{self.model_name}_{self.network_type}_fallbackCSNgraph.html"
+                plot(fig, filename = str(fallback_savepath), auto_open=False)
+                print(f"Something went wrong with the original save's filepath: {e} \nFallback save location: {fallback_savepath}")
+            except Exception:
+                raise ChemNetError(f"Failed to save network visualization")
 
 
     @staticmethod
@@ -337,6 +346,7 @@ class ChemNet:
 
             return encoded_mol
         except Exception as e:
+            # keep track of the error but don't fail the entire visualization process
             print(f"Warning: Could not generate image for {smiles}: {e}")
             return None
 
@@ -361,3 +371,30 @@ class ChemNet:
         molecule_size = base_size * self.scaling_constant
 
         return molecule_size
+
+
+    def pkl_safeload(self, filepath):
+        """Safely load pickle file with validation"""
+        file_desc = str(f"{self.model_name} {self.network_type} Tanimoto similarity data file")
+
+        try:
+            if not filepath.exists():
+                raise ChemNetError(f"{file_desc} not found: {filepath}")
+
+            if filepath.stat().st_size == 0:
+                raise ChemNetError(f"{file_desc} is empty: {filepath} ")
+
+            with open(filepath, 'rb') as handle:
+                data = pickle.load(handle)
+
+            if not data:
+                raise ChemNetError(f"{file_desc} is empty: {filepath}")
+
+            return data
+
+        except (pickle.PickleError, EOFError) as e:
+            raise ChemNetError(f"Corrupted {file_desc}: {filepath} | {e}") from e
+        except PermissionError:
+            raise ChemNetError(f"Permission denied accessing {file_desc}: {filepath}")
+        except Exception as e:
+            raise ChemNetError(f"Failed to load {file_desc}: {filepath} | {e}")

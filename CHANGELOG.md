@@ -56,3 +56,29 @@ Improvements to the MutaGen algorithm
 
 - fixed / added addition step of optimized molecules to next iteration: the previous version 'quit' exploring once an optimized molecule was found by not letting it in to the next iteration. So the algorithm was basically limiting itself more up until now.
 
+
+NOCTURNAL v2.3.0 June 19 2025
+ADDED CHEMICAL SPACE VISUALIZATION MODULE
+
+The methodology to generating the nodes and portions of the chemical space visualization code were inspired and derived from work by Vincent F. Scalfani (see NOTICE file).
+
+## Chemical Space Visualization Module Features:
+- introduced two new files containing toolsets containing specialized toolsets for visualizing the molecules MutaGen produces in chemical space:
+	- a05_csnodes contains utility functions and the CSNodes class which function together in order to generate Tanimoto similarity data using rdkit's fingerprinting as well as node data containing SMILES and pIC50 values
+	- a06_chemnet contains the ChemNet class which takes both the Tanimoto similarity and SMILES: pIC50 data in order to generate an interactive Chemical Space Network Graph
+- molecules' potencies are shown by their highlight colour (colorscheme is configurable)
+- molecules' 2D chemical structures are displayed directly on the graph 
+Interactive features:
+	- hover text shows pIC50, % rank (of pIC50) and the chemical string (SMILES)
+	- plotly allows for zoom/pan functionality
+Adaptive layout:
+	- adaptive network density and 2D molecular image sizing to subset size to retain as much visual clarity as possible
+- thorough error handling (I hope)
+- graph cosmetic customizability from config file (can toggle the presence / absence of nodes, 2D images)
+
+Future Improvements:
+- Logging functionality
+- Continued enhancements towards MutaGen's algorithm.
+- Chemical space network statistics
+- Displaying optima and optimized compounds together
+

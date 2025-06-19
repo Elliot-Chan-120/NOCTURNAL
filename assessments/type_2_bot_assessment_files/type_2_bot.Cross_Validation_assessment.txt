@@ -1,6 +1,0 @@
-type_2_bot Cross_Validation Assessment
-Stacking
-Optimal Hyperparameters: None
-Mean R^2 Score: 0.6442028821659262 
-Mean RMSE: 0.7817582981141189 
-Mean MAE: 0.5554998028920071

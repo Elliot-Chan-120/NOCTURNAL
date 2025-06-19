@@ -30,4 +30,5 @@ def csn_network():
     ChemNet("test_model_1", "optima").graph_data()
 
 
+csn_data()
 csn_network()

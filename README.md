@@ -334,8 +334,6 @@ This section goes deeper into the core algorithms and background processes that 
 
 
 ## Future Improvements
-
-- logging instead of print statements (I got carried away with everything else)
 - chemical space visualization
 - drug candidate visualizations
 - logging instead of print statements

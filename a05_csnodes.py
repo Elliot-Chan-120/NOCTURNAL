@@ -4,8 +4,6 @@ import os
 from multiprocessing import Pool
 from pathlib import Path
 
-from pycodestyle import continued_indentation
-
 from b01_utility import *
 
 from rdkit import Chem
@@ -152,6 +150,8 @@ class CSNodes:
             raise CSNDataError(f"CSV file empty: {self.filepath}")
         except pd.errors.ParserError as e:
             raise CSNDataError(f"Error parsing CSV file: {e}")
+        except PermissionError:
+            raise CSNDataError(f"Permission denied accessing: {self.filepath}")
         except Exception as e:
             raise CSNDataError(f"Error reading CSV file: {e}")
 
@@ -171,9 +171,10 @@ class CSNodes:
         return nodes
 
     def targeted_save(self, data, datatype):
-        try:
-            savepath = Path(self.storage) / f"{self.model_name}_{self.network_type}_{datatype}.pkl"
 
+        savepath = Path(self.storage) / f"{self.model_name}_{self.network_type}_{datatype}.pkl"
+
+        try:
             if savepath.exists():
                 backup_path = savepath.with_suffix('.pkl.backup')
                 savepath.rename(backup_path)
