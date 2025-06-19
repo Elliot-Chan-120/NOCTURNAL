@@ -43,29 +43,19 @@ class ChemNet:
         if target_folder_name not in folders:
             raise ChemNetError(
                 f"{self.model_name} does not exist in the network data storage: Check if this is a valid stored model or if it's saved data has been processed by a05")
-        # tanimoto calculation filepath
-        self.storage = self.network_path / target_folder_name  # graph folder)
 
+        # tanimoto similarity calculation dataframe filepath
+        self.tandata_path  = self.network_path / target_folder_name  # graph folder)
 
+        # handle improper network type
         self.network_type = network_type
-        # detect valid map type
-        if self.network_type == "optima":
-            self.filepath = Path(self.cfg['predictions']) / f"{self.model_name}_local_optima_compounds.csv"
-            self.smiles_str = 'Optima SMILES'
-            self.potency_str = 'pIC50 Values'
-        elif self.network_type == "optimized":
-            self.filepath = Path(self.cfg['predictions']) / f"{self.model_name}_optimized_compounds.csv"
-            self.smiles_str = 'Target SMILES'
-            self.potency_str = 'pIC50 Values'
-        else:
-            raise ValueError("Invalid Chemical Space Network Type Detected. Select between: Optimized / Optima")
-
+        if self.network_type not in ['optima', 'optimized']:
+            raise ValueError(f"Invalid network_type: {self.network_type}. Must be either 'optima' or 'optimized'")
 
         # initialize settings
         self.scaling_constant = 0.4
         self.top_percent = 0
         self.k_dist = 0
-
 
         # toggle settings from cfg
         self.node_opacity = 0 if self.cfg['transparent_nodes'] is True else 1
@@ -75,22 +65,58 @@ class ChemNet:
         # we'll need this later
         self.node_count = None
 
-
         # make folder within prediction / result file to upload html files of CSN graph
         self.upload_path = Path(self.cfg['predictions']) / f"{self.model_name}_CSN_graphs"
         self.upload_path.mkdir(parents=True, exist_ok=True)
 
     def graph_data(self):
-        with open(Path(self.storage) / f"{self.model_name}_{self.network_type}_subsets.pkl", 'rb') as file1:
-            subsets = pickle.load(file1)
+        """Determine greatest % of subset data to display"""
+        try:
+            subsets_filepath = Path(self.storage) / f"{self.model_name}_{self.network_type}_subsets.pkl"
+            nodes_filepath = Path(self.storage) / f"{self.model_name}_{self.network_type}_node_data.pkl"
 
-        with open(Path(self.storage) / f"{self.model_name}_{self.network_type}_node_data.pkl", 'rb') as file2:
-            node_data = pickle.load(file2)
+            # validate files exist and aren't empty / are readable
+            for filepath in [subsets_filepath, nodes_filepath]:
+                if not filepath.exists():
+                    raise ChemNetError(f"Required data file not found: {filepath}")
+                if filepath.stat().st_size == 0:
+                    raise ChemNetError(f"Data file is empty: {filepath}")
+
+            # load pkl files with error handling
+            try:
+                with open(subsets_filepath, 'rb') as subset_file:
+                    subsets = pickle.load(subset_file)
+            except (pickle.PickleError, EOFError) as e:
+                raise ChemNetError(f"pkl error loading subsets file: {subsets_filepath} | {e}")
+            except Exception as e:
+                raise ChemNetError(f"Unexpected error loading subsets file: {subsets_filepath} | {e}")
+
+            try:
+                with open(nodes_filepath, 'rb') as nodes_file:
+                    node_data = pickle.load(nodes_file)
+            except (pickle.PickleError, EOFError) as e:
+                raise ChemNetError(f"pkl error loading subsets file: {nodes_filepath} | {e}")
+            except Exception as e:
+                raise ChemNetError(f"Unexpected error loading subsets file: {nodes_filepath} | {e}")
+
+        except Exception as e:
+            raise ChemNetError(f"Unexpected error occurred during file validation: {e}")
+
+        # handle empty / insufficient data
+        if not subsets:
+            raise ChemNetError("No tanimoto similarity data available for CSN visualization")
+        if len(node_data) < 2:
+            raise ChemNetError("Insufficient nodes for network visualization: min 2 nodes needed")
+
+        # if data is too high - don't process it: may need to adjust this threshold after enough testing
+        if len(subsets) > 1000000:
+            raise ChemNetError(f"Dataset too large for visualization: {len(subsets)} pairs. Consider trimming the optima / optimized data files down first.")
 
         scored_subsets = [(key, value['tan_mcs']) for key, value in subsets.items()]
         sorted_subset = sorted(scored_subsets, key=lambda x: x[1], reverse=True)
 
-        # DATA SCALING HERE
+
+        # [[DATA SCALING HERE]]
         # adaptive number of edges to amount of data for readability
         n_total = len(sorted_subset)
         if n_total > 10000:
@@ -124,26 +150,32 @@ class ChemNet:
         elif density > 0.05:
             self.k_dist *= 1.2
 
-
         self.interactive_network(csn_subsets, node_data)
         return True
 
+
     def interactive_network(self, subsets, nodes):
         """Uses data generated by get_graph to visualize the chemical space network"""
-        G1 = nx.Graph()
-        for key, value in subsets.items():
-            G1.add_edge(value['smi1'], value['smi2'], weight=value['tan_mcs'])
+        try:
+            G1 = nx.Graph()
 
-        custom_label = {}
-        for smile, pIC50 in nodes.items():
-            G1.add_node(smile, ID=smile, pIC50=pIC50)  # add node data
-            custom_label[smile] = str(smile)
+            for key, value in subsets.items():
+                G1.add_edge(value['smi1'], value['smi2'], weight=value['tan_mcs'])
 
-        # DISTANCING BETWEEN NODES HERE
-        # network plot -> determine how close or far each node is going to be from each other
-        pos = nx.spring_layout(G1, self.k_dist, seed=40)
+            custom_label = {}
+            for smile, pIC50 in nodes.items():
+                G1.add_node(smile, ID=smile, pIC50=pIC50)  # add node data
+                custom_label[smile] = str(smile)
 
-        # === COLORMAPPING === -> need to fix this
+            # [[DISTANCING BETWEEN NODES HERE]]
+            # network plot -> determine how close or far each node is going to be from each other
+            pos = nx.spring_layout(G1, self.k_dist, seed=40)
+        except nx.NetworkXError as e:
+            raise ChemNetError(f"Network layout calculation failed: {e}")
+        except Exception as e:
+            raise ChemNetError(f"Unexpected error during network setup: {e}")
+
+        # [[COLORMAPPING]] -> need to fix this
         # colormap the potency values using percentile-based strategy
         pic_values = np.array([data['pIC50'] for node, data in G1.nodes(data=True)])
         color_values = np.zeros_like(pic_values)
@@ -203,7 +235,7 @@ class ChemNet:
             # generate molecule image for hover-text
             mol_image = self.molecular_image(smile, normalized_custom_rgb, size=(250, 250))
 
-            # BUILD HOVER TEXT TO BE DISPLAYED AND 2D MOL IMAGES
+            # [[BUILD HOVER TEXT TO BE DISPLAYED AND 2D MOL IMAGES]]
             if mol_image:
                 hover_image[smile] = mol_image
                 hover_text = f"""
@@ -211,7 +243,7 @@ class ChemNet:
                 <b>pIC50:</b> {data["pIC50"]:.4f}<br>
                 <b>Percentile:</b> {color_values[i]:.4f}%<br>"""
             else:
-                raise ValueError("No structure detected, analyze dataset and see if a molecule is (somehow) missing")
+                raise ValueError("No structure detected, analyze dataset and see if a molecule is missing")
             node_hover_text.append(hover_text)
 
             molecule_size = self.adaptive_sizing(pos)
@@ -273,34 +305,40 @@ class ChemNet:
         convert the molecule's smiles into base64 image that plotly can use
         :return: molecules b64-encoded 2D image base64
         """
-        mol = Chem.MolFromSmiles(smiles)
+        try:
+            mol = Chem.MolFromSmiles(smiles)
+            if mol is None:
+                return None
 
-        # draw molecule
-        drawer = rdMolDraw2D.MolDraw2DCairo(size[0], size[1])
-        drawer.drawOptions().clearBackground = False
-        drawer.drawOptions().addStereoAnnotation = False
+            # draw molecule
+            drawer = rdMolDraw2D.MolDraw2DCairo(size[0], size[1])
+            drawer.drawOptions().clearBackground = False
+            drawer.drawOptions().addStereoAnnotation = False
 
-        if rgb:
-            # get indices for atoms and bonds so we can highlight them
-            atoms = [atom.GetIdx() for atom in mol.GetAtoms()]
-            bonds = [bond.GetIdx() for bond in mol.GetBonds()]
+            if rgb:
+                # get indices for atoms and bonds so we can highlight them
+                atoms = [atom.GetIdx() for atom in mol.GetAtoms()]
+                bonds = [bond.GetIdx() for bond in mol.GetBonds()]
 
-            # highlighting stuff
-            drawer.drawOptions().fillHighlights = True
-            drawer.drawOptions().setHighlightColour(rgb[:3] + (0.3,))
-            drawer.drawOptions().highlightBondWidthMultiplier = 5
-            drawer.drawOptions().highlightRadius = 0.3
+                # highlighting stuff
+                drawer.drawOptions().fillHighlights = True
+                drawer.drawOptions().setHighlightColour(rgb[:3] + (0.3,))
+                drawer.drawOptions().highlightBondWidthMultiplier = 5
+                drawer.drawOptions().highlightRadius = 0.3
 
-            rdMolDraw2D.PrepareAndDrawMolecule(drawer, mol, highlightAtoms=atoms, highlightBonds=bonds)
-        else:
-            rdMolDraw2D.PrepareAndDrawMolecule(drawer, mol)
-        drawer.FinishDrawing()
+                rdMolDraw2D.PrepareAndDrawMolecule(drawer, mol, highlightAtoms=atoms, highlightBonds=bonds)
+            else:
+                rdMolDraw2D.PrepareAndDrawMolecule(drawer, mol)
+            drawer.FinishDrawing()
 
-        # convert from png to base64 so plotly can use it
-        mol_png = drawer.GetDrawingText()
-        encoded_mol = base64.b64encode(mol_png).decode()
+            # convert from png to base64 so plotly can use it
+            mol_png = drawer.GetDrawingText()
+            encoded_mol = base64.b64encode(mol_png).decode()
 
-        return encoded_mol
+            return encoded_mol
+        except Exception as e:
+            print(f"Warning: Could not generate image for {smiles}: {e}")
+            return None
 
 
     def adaptive_sizing(self, pos):
