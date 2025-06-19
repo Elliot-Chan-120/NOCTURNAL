@@ -1,7 +1,11 @@
 import pandas as pd
+
 import numpy as np
+
 import seaborn as sns
+
 import matplotlib.pyplot as plt
+
 from sklearn.metrics import r2_score, make_scorer, mean_squared_error, mean_absolute_error
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.model_selection import train_test_split, cross_validate, GridSearchCV
@@ -9,6 +13,7 @@ from sklearn.ensemble import RandomForestRegressor, StackingRegressor
 from xgboost import XGBRegressor
 from sklearn.svm import SVR
 from sklearn.linear_model import Ridge
+
 from pathlib import Path
 import pickle as pkl
 from b01_utility import *
@@ -27,7 +32,7 @@ class ModelBuilder:
         self.cfg = validate_config()
 
         # NAVIGATION
-        self.bioact_folder_path = Path(self.cfg['bioactivity_folder'])
+        self.bioact_folder_path = Path(self.cfg['database'])
         self.fpdf_path = self.bioact_folder_path / self.cfg['fingerprintdf_4']  # fingerprint filepath
 
         # make folder to hold ML model and its settings
