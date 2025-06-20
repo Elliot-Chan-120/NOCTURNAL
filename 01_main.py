@@ -10,10 +10,10 @@ def demo_datascout():
     data_scout("Tau", 20)
 
 def demo_dataseekprocess():
-    DataSeekProcess("Tau", 1, "PubChem").run()
+    DataSeekProcess("Tau", 20, "PubChem").run()
 
 def demo_modelbuilder():
-    ModelBuilder('type_2_bot').build()
+    ModelBuilder('test_model_1').build()
 
 def demo_runmodel():
     RunModel("test_model_1", "test_smile").run_predictions()
@@ -21,14 +21,14 @@ def demo_runmodel():
 def demo_optimizecompound():
     MutaGen('test_model_1').init_optimize()
 
-def csn_data():
-    csn_dataprocessor("test_model_1", "optimized")
-    csn_dataprocessor("test_model_1", "optima")
+def csn_data(model_name):
+    csn_dataprocessor(model_name, "optimized")
+    csn_dataprocessor(model_name, "optima")
 
-def csn_network():
-    ChemNet("test_model_1", "optimized").graph_data()
-    ChemNet("test_model_1", "optima").graph_data()
+def csn_network(model_name):
+    ChemNet(model_name, "optimized").graph_data()
+    ChemNet(model_name, "optima").graph_data()
 
 
-csn_data()
-csn_network()
+csn_data("test_model_1")
+csn_network("test_model_1")
