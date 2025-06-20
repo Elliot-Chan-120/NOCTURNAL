@@ -208,11 +208,12 @@ def csn_dataprocessor(model_name, network_type):
     for key, value in subsets.items():
         mol_tuples.append((value['mol1'], value['mol2'], key))
 
-    if __name__ == '__main__':
-        with Pool(num_cpus) as p:
-            star_map = p.starmap(tc_mcs, mol_tuples)
-        for key, tan_mcs in star_map:
-            subsets[key].update({"tan_mcs": round(tan_mcs, 3)})
 
-        item.targeted_save(subsets, "subsets")
-        item.targeted_save(node_data, "node_data")
+    with Pool(num_cpus) as p:
+        star_map = p.starmap(tc_mcs, mol_tuples)
+    for key, tan_mcs in star_map:
+        subsets[key].update({"tan_mcs": round(tan_mcs, 3)})
+
+
+    item.targeted_save(subsets, "subsets")
+    item.targeted_save(node_data, "node_data")

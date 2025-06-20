@@ -22,13 +22,15 @@ def demo_optimizecompound():
     MutaGen('test_model_1').init_optimize()
 
 def csn_data(model_name):
-    csn_dataprocessor(model_name, "optimized")
-    csn_dataprocessor(model_name, "optima")
+    if __name__ == '__main__':
+        csn_dataprocessor(model_name, "optimized")
+        csn_dataprocessor(model_name, "optima")
 
-def csn_network(model_name):
-    ChemNet(model_name, "optimized").graph_data()
-    ChemNet(model_name, "optima").graph_data()
+def csn_network(model_name, weight_method):
+    ChemNet(model_name, "optimized", weight_method).graph_data()
+    ChemNet(model_name, "optima", weight_method).graph_data()
 
 
-csn_data("test_model_1")
-csn_network("test_model_1")
+csn_network("test_model_1", 'hybrid')
+csn_network("test_model_1", 'tan_sim')
+csn_network("test_model_1", 'tan_mcs')

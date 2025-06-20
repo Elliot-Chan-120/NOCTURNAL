@@ -107,6 +107,8 @@ node_toggle: True   # keeps / removes nodes
 label_toggle: False  # just displays the hover text
 2D_molecules: True  # displays 2D structures
 node_size: 2
+# NOTE: this is only active when the weight_method parameter for ChemNet is 'hybrid'
+tanimoto_bias: 0.5  # determines how much weight the plot is biased towards: overall similarity (1) or maximum common substructure (0)
 
 
 # ====

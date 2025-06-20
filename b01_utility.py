@@ -64,7 +64,7 @@ def validate_config():
         'random_forest_params',
         'candidates', 'iterations', 'target_increase', 'error_threshold', 'success_threshold', 'retain_threshold',
         'data_scout_csv', 'auto_save_model', 'n_features',
-        'colorscale', 'transparent_nodes', 'node_toggle', 'label_toggle', '2D_molecules', 'node_size'
+        'colorscale', 'transparent_nodes', 'node_toggle', 'label_toggle', '2D_molecules', 'node_size', 'tanimoto_bias'
     ]
 
     for key in required_keys:
