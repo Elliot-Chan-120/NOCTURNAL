@@ -15,9 +15,9 @@ All rights reserved.
 Key Modifications Made:
 - Integrated with NOCTURNAL's ML training pipelines and drug optimization algorithm "MutaGen" -> specialized to output chemical space network graphs for the optimized and optima compounds that are produced with MutaGen
 - Modularized codeblocks into classes and function toolsets to:
-	a) generate calculated data (Tanimoto similarity)
+	a) generate calculated data (Tanimoto similarity, MCS)
 	b) visualize the chemical space network
-Therefore making the process easily repeatable for various data
+- Edge weight for constructing the CSN graph can be changed between Tanimoto similarity, MCS, or a hybrid method combining both, where the bias towards one can be set in the config file -> 'tanimoto_bias' (default = 0.5)
 - Replaced matplotlib with Plotly for interactive visualization
 - Implemented adaptive 2D molecular image sizing
 - Adaptive network density to subset size
