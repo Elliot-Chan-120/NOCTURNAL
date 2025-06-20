@@ -30,7 +30,7 @@ Firstly, a target protein has to be selected. I was interested in the Tau protei
 data_scout(target_input = “Tau”, size = 20)
 ```
 
-data_scout will query the ChEMBL database for drug data on that target protein, and will output data as such:
+data_scout will query the ChEMBL database for drug data on that target protein, and output data as such:
 
 > INDEX[25] CHEMBL1907600 | Homo sapiens | PROTEIN COMPLEX | 2447 IC50 entries
 > 
@@ -53,7 +53,7 @@ Data indices (INDEX[X]) are automatically ranked according to number of IC50 ent
 Let’s say I wanted to use the first option, which is data index number ‘25’, I selected it since its got the greatest amount of IC50 entries and the data source is Homo sapiens | PROTEIN COMPLEX so it's relevant to us. Now I want to build a ML model using this data. I will first call on DataSeekProcess, pass on the target protein name and index, then say .run()
 
 ```python
-DataSeekProcess(target_protein = “Tau”, selected_target_index = 25, fingerprint_setting “PubChem”).run()
+DataSeekProcess(target_protein = “Tau”, selected_target_index = 25, fingerprint_setting = “PubChem”).run()
 ```
 
 “PubChem” refers to the specific settings that we use for molecular fingerprint generation. If you didn’t understand that, welcome to the club. Joking. Think of a molecular fingerprint as a way to represent chemical structures as 1’s and 0’s (that’s basically it). There’s various fingerprinting settings that we can select in the “PADEL SETTINGS” → “settings” section of the config file, which will affect how each molecular substructure is encoded in the final dataframe, which we build our machine learning models on. 
@@ -67,10 +67,10 @@ When we call on class ModelBuilder, it will access our database folder and look 
 - **Stacking**: trains multiple base models - I chose RandomForestRegressor, XGBRegressor, and Support Vector Regression. Each base model makes predictions while a “meta-learner” (Ridge Regression) looks over them and learns how to combine them. It leverages the strengths of multiple algorithms, and is usually more accurate than any single model.
     - This cranked my CPU temperature to 79 celsius though, so that may be a drawback if your operating system is on the low end.
 
-That was a lot. Well now we can actually build the machine learning model! We don’t need to pass anything on to it other than the name we want to give our model.
+That was a lot. Well, now we can actually build the machine learning model! We don’t need to pass anything on to it other than the name we want to give our model.
 
 ```python
-ModelBuilder(’test_model_1”).build()
+ModelBuilder("test_model_1”).build()
 ```
 
 After running this, we now have a folder named “test_model_1” in the “ml_models” folder as well as a few performance metrics about our model in the assessments folder (explained in the core features section of this readme). Inside this folder is the machine learning model saved as a .pkl file and a .txt file called “[name]_settings.txt”. We need both, as the settings file serves as a filter for future data to be passed through and be accessible by the ML model we made. 
@@ -81,7 +81,7 @@ We now have built a machine learning model that can predict ANY chemical compoun
 
 Remember at the start when we saw a SMILES string (e.g. CCC(=O)O...) ? Every chemical compound has a representation as a SMILES. Let’s say you’re in a lab and they want to explore how compounds ‘x’, ‘y’, ‘z’, ‘x2’, ‘y2’, ‘z2’ will perform against a certain disease, whose target protein they’ve identified and entries already exist in ChEMBL… 
 
-Well I’m not in a lab (yet), I’m in a basement, and I don’t have advanced chemical compounds from a lab, I have my old organic chemistry II notes from which I gathered a few random chemicals and put through an online “chemical name to SMILES converter”. I then put these SMILES into a file called “test_smile.smi” which we need to move to the “input_folder”. The file looks like this:
+Well, I’m not in a lab (yet); I’m in a basement, and I don’t have advanced chemical compounds from a lab, I have my old organic chemistry II notes from which I gathered a few random chemicals and put through an online “chemical name to SMILES converter”. I then put these SMILES into a file called “test_smile.smi” which we need to move to the “input_folder”. The file looks like this:
 
 > filename: test_smile.smi
 > 
@@ -106,7 +106,7 @@ Well I’m not in a lab (yet), I’m in a basement, and I don’t have advanced 
 > O=C(C)Oc1ccccc1C(=O)O	Aspi   rin
 > 
 
-Wait, why are all the names (and not the SMILES…) messed up? My bad, my hands cramped from writing this extensive readme. Anyway, it doesn’t matter, because when we call on class RunModel and feed it this file, it will automatically validate it, and output its validated version. It will have a “VALID_” followed by your submitted file’s original name in the “input_folder”:
+Wait, why are all the names (and not the SMILES…) messed up? My bad, my hands cramped from writing this extensive README. Anyway, it doesn’t matter, because when we call on class RunModel and feed it this file, it will automatically validate it, and output its validated version. It will have a “VALID_” followed by your submitted file’s original name in the “input_folder”:
 
 > filename: VALID_test_smile.smi
 > 
@@ -334,37 +334,45 @@ Let's say we want to look at overall similarity, we give the csn_network these p
 csn_network("test_model_1", 'tan_sim')
 ```
 
-- need to make an images folder or something cause how am i gonna show the network and what it looks like?
+When we run csn_network, we get two CSN graphs. One displays the optima compounds (that failed to improve 'x' times) and the optimized compounds (ones that improved to or past our goal). The graph displays the 2D chemical structure of each molecule that was generated, and their highlight color corresponds to how potent they are relative to the rest. You can consult the legend bar on the right. 
+- [image here]
 
+When we hover our mouse over each node / molecule we get their info: SMILES string, pIC50 % rank, and raw pIC50 value.
+- [image here]
 
-
+If you think that the molecules are too cluttered or hard to see, we can either zoom in to the section you want to see, or turn set both 2D molecular imaging and transparent nodes to "False" in the config's second-last section. For the latter, you will have to rely on the SMILES to 'see' the drug.
+- [image here]
 
 ## **That marks the end :)**
 
-I just took us through one run, from peering into a chemical database, to generating a massive list of chemical compounds optimized towards a target disease protein of our choice! 
+I just took us through one run, from peering into a chemical database, to generating a list of chemical compounds optimized towards a target disease protein of our choice, then visualizing all of them in a chemical space network graph!
 
-P.S. If there’s anything wrong with the project or any information that could be clarified, I would be very happy to learn as I’m fairly new to programming and have less than a month’s experience with machine learning.
+P.S. If there’s anything wrong with the project or any information that could be clarified, I would be very happy to learn as I’m fairly new to programming and have little experience with machine learning.
 
 ## [3] Core Features - NOCTURNAL’s Architecture
 
 This section goes deeper into the core algorithms and background processes that bring about the results it produces.
 
+
 **[1] Config-driven architecture and automatic config key + folder validations**
 
 - The 0_config.py file allows for customizability of a lot of core processes, like how many attempts one wishes to attempt at making molecular fingerprints as well as default parameters for training future machine learning models
-- Furthermore, file b01_utility.py contains many custom error classes that help pinpoint the user towards the source of any mishaps during runs. E.g. ModelBuilderError, RunModelError .etc
+- Furthermore, file b01_utility.py contains many custom error classes that help pinpoint the user towards the source of any mishaps during runs. E.g. ModelBuilderError, RunModelError etc.
 - The validate_config() function in b01_utility is called upon every single class instantiation throughout the entire pipeline: it validates that all the keys in the config file, and all the required folders are present in their respective places. If those conditions are fulfilled, it loads the config file. Otherwise a custom “ConfigurationError” is raised.
 - The get_fingerprint() function allows for automatic fingerprint type detection upon properly selecting an ML model for running or optimization.
+
 
 **[2] Navigation-aided approach**
 
 - data_scout()’s aim is to facilitate decision-making by automatically sorting data indices by largest IC50 data entries to lowest, and it takes this one step further by outputting data quality information, such as where the data came from. This is relevant since its generally better to train models on larger amounts of higher quality data.
 
+
 **[3] ModelBuilder’s modular feature organization**
 
 - Class ModelBuilder allows one to choose what kind of model to build among the choices RandomForestRegressor, XGBoostRegressor, and Stacking RFR, XGBR, and SVR with Ridge as the meta-learner.
-- RFR and XGBR go through hyperparameter optimization using GridSearchCV, while Stacking remains default (computationally expensive and time-comsuming on top of greater overfitting risk on smaller datasets. I might still add it in later on though).
-- All go through sequential model evaluation: hold-out test set followed by k-fold cross validation. Model evaluation metrics such as R^2, RMSE, MAE on top of model performance and feature importance graphs are saved into the assessments folder.
+- RFR and XGBR go through hyperparameter optimization using GridSearchCV, while Stacking remains default (computationally expensive and time-consuming on top of greater overfitting risk on smaller datasets. I might still add it in later on though).
+- All models go through sequential model evaluation: hold-out test set followed by k-fold cross validation. Model evaluation metrics such as R^2, RMSE, MAE on top of model performance and feature importance graphs are saved to the assessments folder.
+
 
 **[4] MutaGen’s algorithm system: integrating stochastic, heuristic and machine learning algorithms**
 
@@ -372,18 +380,39 @@ This section goes deeper into the core algorithms and background processes that 
 - Heuristic approach to validating compounds and breaking local optima: the new compound must fulfill two rules to pass on to the next iteration:
     1. It must have a pIC50 value improvement greater than a specified configurable amount (default = 0.05)
     2. It must fulfill minimum 2/4 Lipinski rules of oral bioavailability
-    - If it fails to meet one of these, it does not make it through to the next iteration and the previous is kept. A “keep_counter” integer associated with each candidate compound is incremented by +1. When this number reaches 3, the molecule is deemed an "optima" compound, and the rules to pass on change, allowing mutations resulting in negative pIC50 changes down to -0.5 and 0+ lipinski criteria fulfilled. The aim of this is to explore other chemical space orientations and escape optimization plateaus.
+    - If it fails to meet one of these, it does not make it through to the next iteration and the previous is kept. A “retain counter” integer associated with each candidate compound is incremented by +1. When this number reaches 3 (config's retain_threshold), the molecule is deemed an "optima" compound, and the rules to pass on change, allowing mutations resulting in negative pIC50 decreases to -0.5 and 0+ lipinski criteria fulfilled. As the retain_count continues to increase, the room for error decreases. The idea behind this is to explore the nearby chemical space with the goal of producing high-performance compounds.
+
 - Mutations are guided by a curated set of bioactive fragments instead of random atoms, improving the chemical realism of generated structures.
-- Chemical Validity Filters: all mutations are first validated using valence checks and RDKit sanitizations. Fragment size filters are also applied to remove unstable or irrelevant candidates.
-- Adaptive Logic to protect compounds: Short SMILES are protected from being destabilized further or eliminated by removal mutations, and hydrogen atoms are never used as connection points so valencies are constantly in check.
-- P.S. this is definitely still a work in progress, I have a list of things I would definitely change to improve its performance that is already in the works.
+- Chemical validity filters: all mutations are first validated using valence checks and RDKit sanitizations. Fragment size filters are also applied to remove unstable or irrelevant candidates.
+- Adaptive Logic to protect compounds: Short SMILES are protected from being destabilized further or eliminated by removal mutations, and hydrogen atoms are never used as connection points so valencies are constantly kept in check.
+- If a molecule ends up being fragmented, the largest fragment is taken, this is to prevent downstream functions from failing.
 - Catches all molecules that met or surpassed a desired improvement in pIC50, compounds that were deemed local optima i.e. could not improve after a certain amount of tries, on top of the final candidates.
     - Outputs all as 3 separate dataframes for targeted analysis.
 
+- Note: this is definitely still a work in progress, I have a list of things I would definitely change to improve its performance that is already in the works.
+
+
+
+**[5] ChemNet - NOCTURNAL's Visualization Engine**
+
+- ChemNet represents a sophisticated chemical space visualization system, bridging ML predictions with interactive network analysis
+- Processes ML optimization outputs from MutaGen for both optima and optimized molecular sets, facilitating Structure Activity Analysis and drug discovery workflows
+
+
+- Intelligent network scaling via dynamic edge filtering and density-responsiveness allows for automatic adjustments to edge-density, 2D molecule size, and spacing depending on how much total data is available.
+- Multi-modal similarity system: allows for tanimoto fingerprint, MCS and a flexible hybrid mode to determine which method of similarity measure will shape the CSN graph.
+- 2D structure molecular imaging of all molecules, complemented with color-coordinated highlighting to match potency percentile rankings
+- Handles outliers and data distribution through percentile normalization 
+- Adaptive sizing algorithm automatically calculates optimal molecular image sizes based on network density and layout boundaries, and computes node distribution to prevent overlap and maximize visibility
+- SMILES strings, % pIC50 rank, and raw pIC50 values appear in hover tooltips
+- Multi-stage data validation with a custom exception class and graceful fallback mechanisms to prevent breaking the entire visualization, as well as comprehensive file operation safety checks.
+
+
 
 ## Future Improvements
-- chemical space visualization
-- drug candidate visualizations
+- MutaGen adaptive fragments
+- Choose which molecule to start optimizing: lead candidate (input), lead from database, or custom HC chain
+- More CSN statistics
 - logging instead of print statements
 
 ## Prerequisites and Dependencies
@@ -395,9 +424,11 @@ This section goes deeper into the core algorithms and background processes that 
     - pandas
     - numpy
     - rdkit
-    - padelpy -> also search online and download the PaDEL descriptor software, unzip the package and copy all the xml files to a new folder in your project directory
+    - padelpy -> also search online and download the PaDEL descriptor software
     - scikit-learn
     - xgboost
     - seaborn
     - matplotlib
     - pyyaml
+    - plotly
+    - networkx
