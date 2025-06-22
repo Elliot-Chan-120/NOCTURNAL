@@ -334,11 +334,20 @@ Let's say we want to look at overall similarity, we give the csn_network these p
 csn_network("test_model_1", 'tan_sim')
 ```
 
-When we run csn_network, we get two CSN graphs. One displays the optima compounds (that failed to improve 'x' times) and the optimized compounds (ones that improved to or past our goal). The graph displays the 2D chemical structure of each molecule that was generated, and their highlight color corresponds to how potent they are relative to the rest. You can consult the legend bar on the right. 
-- [image here]
+When we run csn_network, we get two CSN graphs. One displays the optimized compounds (ones that improved to or past our goal), and the optima compounds (that failed to improve 'x' times). The graph displays the 2D chemical structure of each molecule that was generated, and their highlight color corresponds to how potent they are relative to the rest. You can consult the legend bar on the right of each graph. 
+<table>
+  <tr>
+    <td><img src="readme_images/1_optimized.png" alt="Description 1" width="500"></td>
+    <td><img src="readme_images/2_optima.png" alt="Description 2" width="500"></td>
+  </tr>
+  <tr>
+    <td align="center">Optimized Compound CSN Graph</td>
+    <td align="center">Optima Compound CSN Graph</td>
+  </tr>
+</table>
 
 When we hover our mouse over each node / molecule we get their info: SMILES string, pIC50 % rank, and raw pIC50 value.
-- [image here]
+<img src="readme_images/5_hover_text.png" alt="Description 1" width="500">
 
 If you think that the molecules are too cluttered or hard to see, we can either zoom in to the section you want to see, or turn set both 2D molecular imaging and transparent nodes to "False" in the config's second-last section. For the latter, you will have to rely on the SMILES to 'see' the drug.
 - [image here]
