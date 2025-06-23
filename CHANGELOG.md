@@ -82,3 +82,11 @@ Future Improvements:
 - Chemical space network statistics
 - Displaying optima and optimized compounds together
 
+NOCTURNAL v2.4.0 - June 22 2025
+Aromatic structure compatibility / optimization capability
+Enhanced MutaGen by allowing it to work with aromatic structures with the following features:
+- Moving from hardcoded fragments to imported fragment lists in the b01_utility file
+- Intelligent fragment selection based on atom aromaticity: aromatic / non-aromatic structure-compatible fragment lists
+- Kekulization and aromaticity management prior to molecular combinations
+- Added a safe_selection() method with error handling during add mutations - prevents 'bad' additions with empty fragments
+
