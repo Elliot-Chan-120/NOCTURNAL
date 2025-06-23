@@ -1,3 +1,6 @@
+from rdkit import Chem
+
+
 class DataSeekProcessError(Exception):
     """Raised when there is an error with DataSeekProcess"""
     pass
@@ -99,3 +102,95 @@ def get_fingerprint(config, model_name):
                     return key
     except Exception as e:
         raise ConfigurationError(f"Error occurred while loading fingerprint setting: {e}")
+
+
+# MUTATION FRAGMENT LIBRARY
+nonaroma_frags = [
+    # simple chains / single atoms
+    Chem.MolFromSmiles('C'),   # methyl
+    Chem.MolFromSmiles('CC'),   # ethyl
+    Chem.MolFromSmiles('CN'),   # methylamino
+    Chem.MolFromSmiles('O'),   # hydroxy
+    Chem.MolFromSmiles('N'),   # amino
+    Chem.MolFromSmiles('F'),   # fluoro
+    Chem.MolFromSmiles('CO'),   # methoxy
+    Chem.MolFromSmiles('S'),   # thiol
+
+    # functional groups
+    Chem.MolFromSmiles('C(=O)O'),   # carboxyl
+    Chem.MolFromSmiles('S(=O)(=O)N'),   # sulfonamide
+    Chem.MolFromSmiles('C(=O)'),   # formyl
+    Chem.MolFromSmiles('C#N'),   # cyano
+    Chem.MolFromSmiles('C(F)(F)F'),   # trifluoromethyl
+    Chem.MolFromSmiles('OC'),   # methoxy
+
+    # More
+    Chem.MolFromSmiles('Cl'),   # chloro
+    Chem.MolFromSmiles('Br'),   # bromo
+    Chem.MolFromSmiles('C(C)C'),   # isopropyl
+    Chem.MolFromSmiles('C(C)(C)C'),   # tert-Butyl
+]
+
+aromatic_frags = [
+    # Simple carbon strings
+    Chem.MolFromSmiles('C'),  # methyl
+    Chem.MolFromSmiles('CC'),  # ethyl
+    Chem.MolFromSmiles('CCC'),  # propyl
+    Chem.MolFromSmiles('C(C)C'),  # isopropyl
+    Chem.MolFromSmiles('CCCC'),  # butyl
+    Chem.MolFromSmiles('C(C)(C)C'),  # tert-Butyl
+
+    # Halogens
+    Chem.MolFromSmiles('F'),  # fluoro
+    Chem.MolFromSmiles('Cl'),  # chloro
+    Chem.MolFromSmiles('Br'),  # bromo
+    Chem.MolFromSmiles('I'),  # iodo
+
+    # Oxygen groups
+    Chem.MolFromSmiles('O'),  # hydroxy
+    Chem.MolFromSmiles('OC'),  # methoxy
+    Chem.MolFromSmiles('OCC'),  # ethoxy
+    Chem.MolFromSmiles('OCCC'),  # propoxy
+    Chem.MolFromSmiles('OC(C)C'),  # isopropoxy
+
+    # Nitrogen groups
+    Chem.MolFromSmiles('N'),  # amino
+    Chem.MolFromSmiles('NC'),  # methylamino
+    Chem.MolFromSmiles('N(C)C'),  # dimethylamino
+    Chem.MolFromSmiles('NCC'),  # ethylamino
+    Chem.MolFromSmiles('N(CC)CC'),  # diethylamino
+
+    # Carbonyls
+    Chem.MolFromSmiles('C(=O)C'),  # acetyl
+    Chem.MolFromSmiles('C(=O)CC'),  # propionyl
+    Chem.MolFromSmiles('C(=O)O'),  # carboxyl
+    Chem.MolFromSmiles('C(=O)OC'),  # methyl ester
+    Chem.MolFromSmiles('C(=O)N'),  # carboxamide
+    Chem.MolFromSmiles('C(=O)NC'),  # N-Methylcarboxamide
+
+    # Sulfur groups
+    Chem.MolFromSmiles('S'),  # thiol
+    Chem.MolFromSmiles('SC'),  # methylthio
+    Chem.MolFromSmiles('S(=O)C'),  # methylsulfinyl
+    Chem.MolFromSmiles('S(=O)(=O)C'),  # methylsulfonyl
+    Chem.MolFromSmiles('S(=O)(=O)N'),  # sulfonamide
+
+    # Special groups
+    Chem.MolFromSmiles('C(F)(F)F'),  # trifluoromethyl
+    Chem.MolFromSmiles('OC(F)(F)F'),  # trifluoromethoxy
+    Chem.MolFromSmiles('C#N'),  # cyano
+    Chem.MolFromSmiles('C[N+](=O)[O-]'),  # nitro
+
+    # Aromatic rings
+    Chem.MolFromSmiles('c1ccccc1'),  # phenyl
+    Chem.MolFromSmiles('c1ccc2ccccc2c1'),  # naphthyl
+    Chem.MolFromSmiles('c1ccncc1'),  # pyridyl
+    Chem.MolFromSmiles('c1cccnc1'),  # pyridyl
+    Chem.MolFromSmiles('c1ccoc1'),  # furanyl
+    Chem.MolFromSmiles('c1ccsc1'),  # thienyl
+
+    # Heterocyclic fragments
+    Chem.MolFromSmiles('C1CCNCC1'),  # piperidyl
+    Chem.MolFromSmiles('C1COCCN1'),  # morpholinyl
+    Chem.MolFromSmiles('C1CCN(C)CC1'),  # N-Methylpiperidyl
+]

@@ -10,7 +10,7 @@ def demo_datascout():
     data_scout("Tau", 20)
 
 def demo_dataseekprocess():
-    DataSeekProcess("Tau", 20, "PubChem").run()
+    DataSeekProcess("Tau", 25, "PubChem").run()
 
 def demo_modelbuilder():
     ModelBuilder('test_model_1').build()
@@ -30,6 +30,7 @@ def csn_network(model_name, weight_method):
     ChemNet(model_name, "optimized", weight_method).graph_data()
     ChemNet(model_name, "optima", weight_method).graph_data()
 
+csn_data('test_model_1')
 
 csn_network("test_model_1", 'hybrid')
 csn_network("test_model_1", 'tan_sim')

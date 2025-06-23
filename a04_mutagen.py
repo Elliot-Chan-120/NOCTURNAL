@@ -5,10 +5,10 @@ import random
 from pathlib import Path
 from padelpy import padeldescriptor
 
-from rdkit import Chem
 from rdkit.Chem import Descriptors, Lipinski
 
 from b01_utility import *
+from b01_utility import nonaroma_frags, aromatic_frags
 
 
 class MutaGen:
@@ -81,6 +81,7 @@ class MutaGen:
         max_row = df.loc[df['pIC50'].idxmax()]
         starting_smiles = max_row['SMILES']
         starting_score = max_row['pIC50']
+
 
         # this is the baseline score for our optimize control function
         # -> seeing which molecules have an increase in pIC50 past a config-defined threshold
@@ -209,64 +210,71 @@ class MutaGen:
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             return smiles
+
         mol_edit = Chem.RWMol(mol)
         mutated_mol = None
 
-        atom_indices = list(range(mol.GetNumAtoms()))
+        # get all atom indexes
+        atom_idxs = list(range(mol.GetNumAtoms()))
+
+        # identify aromatic and non-aromatic atoms
+        aromatic_idxs = [atom.GetIdx() for atom in mol.GetAtoms() if atom.GetIsAromatic()]
+        nonaromatic_idxs = [idx for idx in range(mol.GetNumAtoms()) if idx not in aromatic_idxs]
+
         bond_num = mol.GetNumBonds()
-        if not atom_indices:
+        if not atom_idxs:
             return Chem.MolToSmiles(mol)
 
-        frags =[
-            Chem.MolFromSmiles('C'),
-            Chem.MolFromSmiles('CC'),
-            Chem.MolFromSmiles('CN'),
-            Chem.MolFromSmiles('O'),
-            Chem.MolFromSmiles('N'),
-            Chem.MolFromSmiles('F'),
-            Chem.MolFromSmiles('CO'),
-            Chem.MolFromSmiles('S'),
+        # pick index to alter
+        idx_to_mutate = random.choice(atom_idxs)
 
-            # functional groups
-            Chem.MolFromSmiles('C(=O)O'),
-            Chem.MolFromSmiles('S(=O)(=O)N'),
-            Chem.MolFromSmiles('C(=O)'),
-            Chem.MolFromSmiles('C#N'),
-            Chem.MolFromSmiles('C(F)(F)F'),
-            Chem.MolFromSmiles('OC'),
+        # select appropriate fragment list depending on if it's aromatic or not
+        if idx_to_mutate in aromatic_idxs:
+            frag_list = aromatic_frags
+        elif idx_to_mutate in nonaromatic_idxs:
+            frag_list = nonaroma_frags
+        else:
+            frag_list = nonaroma_frags
 
-            # More
-            Chem.MolFromSmiles('Cl'),
-            Chem.MolFromSmiles('Br'),
-            Chem.MolFromSmiles('C(C)C'),
-            Chem.MolFromSmiles('C(C)(C)C'),
-        ]
 
-        if len(smiles) >= 3:
-            # default choices, normal molecule
-            mutation_type = random.choice(["add_group", "replace", "remove"])
-        elif len(atom_indices) <= 2 or bond_num == 0:
+        # randomly select mutation option for molecule based on its current state
+        if len(atom_idxs) <= 2 or bond_num == 0 or frag_list == aromatic_frags:
             # force additions for very small molecules or single atoms to protect them from being deleted
             mutation_type = "add_group"
+        elif len(smiles) >= 3:
+            # default choices, normal molecule
+            mutation_type = random.choice(["add_group", "replace", "remove"])
         else:
             mutation_type = random.choice(["add_group", "replace"])
 
+        # carry out the mutations
+
         if mutation_type == "add_group":
-            insert_group = random.choice(list(frags))
-            idx = random.choice(atom_indices)
-            atom = mol_edit.GetAtomWithIdx(idx)
+            insert_group = self.safe_selection(frag_list)
+            if insert_group is None:
+                return smiles
+
+            atom = mol_edit.GetAtomWithIdx(idx_to_mutate)
             if atom.GetSymbol() == "H" or not self.valence_check(atom):
-                return Chem.MolToSmiles(mol)  # don't bind Hydrogen
+                return smiles  # don't bind Hydrogen
+
+            try: # clear aromaticity before combining - hopefully this fixes it...
+                Chem.Kekulize(mol_edit, clearAromaticFlags=True)
+                if hasattr(insert_group, 'GetAtoms'):
+                        Chem.Kekulize(insert_group, clearAromaticFlags=True)
+            except Exception as e:
+                print(f"Unable to kekulize : {e}")
+                pass
+
             combination = Chem.CombineMols(mol_edit, insert_group)
             mole = Chem.EditableMol(combination)
             mol_atoms = mol_edit.GetNumAtoms()
-            mole.AddBond(idx, mol_atoms, Chem.BondType.SINGLE)
+            mole.AddBond(idx_to_mutate, mol_atoms, Chem.BondType.SINGLE)
             mutated_mol = mole.GetMol()
 
 
         elif mutation_type == "replace":
-            idx_to_change = random.choice(atom_indices)
-            atom = mol_edit.GetAtomWithIdx(idx_to_change)
+            atom = mol_edit.GetAtomWithIdx(idx_to_mutate)
             current_symbol = atom.GetSymbol()
             atom_list = ["C", "N", "O", "F", "Cl", "Br", "S"]
             if current_symbol in atom_list:
@@ -285,14 +293,18 @@ class MutaGen:
             mutated_mol = mol_edit.GetMol()
 
         elif mutation_type == "remove":
-            if len(atom_indices) <= 1:
+            if len(atom_idxs) <= 1:
                 return mol
-            idx = random.choice(atom_indices)
-            mol_edit.RemoveAtom(idx)
+            mol_edit.RemoveAtom(idx_to_mutate)
             mutated_mol = mol_edit.GetMol()
 
+        # sanitization checks and preserve largest fragment on fragmented molecules
         try:
             Chem.SanitizeMol(mutated_mol)
+
+            if mutated_mol is None:
+                return smiles
+
             mutated_smiles = Chem.MolToSmiles(mutated_mol)
 
             # enhanced fragment handling
@@ -414,3 +426,26 @@ class MutaGen:
     def valence_check(atom):
         return atom.GetImplicitValence() > 0 and atom.GetExplicitValence() < Chem.GetPeriodicTable().GetDefaultValence(
             atom.GetAtomicNum())
+
+    @staticmethod
+    def safe_selection(frag_list):
+        if not frag_list:
+            print(f"Error: fragment list is empty: {frag_list}")
+            return None
+
+        try:
+            select_frag = random.choice(frag_list)
+            if select_frag is None:
+                print(f"Error: selected fragment is None: {Chem.MolToSmiles(select_frag)}")
+                return None
+
+            if select_frag.GetNumAtoms() == 0:
+                print(f"Error: selected fragment has no atoms: {Chem.MolToSmiles(select_frag)}")
+                return None
+
+            return select_frag
+
+        except (IndexError, TypeError, AttributeError) as e:
+            print(f"Error selecting fragment: {e}")
+            return None
+
