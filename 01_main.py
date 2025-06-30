@@ -16,7 +16,7 @@ def demo_modelbuilder():
     ModelBuilder('test_model_1').build()
 
 def demo_runmodel():
-    RunModel("test_model_1", "test_smile").run_predictions()
+    RunModel("test_model_1", "benchmark_smile").run_predictions()
 
 def demo_optimizecompound():
     MutaGen('test_model_1').init_optimize()
@@ -30,8 +30,4 @@ def csn_network(model_name, weight_method):
     ChemNet(model_name, "optimized", weight_method).graph_data()
     ChemNet(model_name, "optima", weight_method).graph_data()
 
-csn_data('test_model_1')
 
-csn_network("test_model_1", 'hybrid')
-csn_network("test_model_1", 'tan_sim')
-csn_network("test_model_1", 'tan_mcs')

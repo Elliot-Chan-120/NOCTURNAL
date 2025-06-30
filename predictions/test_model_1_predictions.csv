@@ -1,11 +1,11 @@
 ,Molecule ID,SMILES,pIC50
-0,Cyclohexane,C1CCCCC1,4.909786429476615
-1,Ethanol,CCO,4.823817551315969
-2,Aceticacid,CC(=O)O,4.977223857317889
-3,Hexane,CCCCCC,4.838476784385388
-4,Benzene,C1=CC=CC=C1,4.909786429476615
-5,hljkjkhiuhhiuhiu,CC(C)O,4.9389590279949935
-6,Tetrahydrofuran(THF),C1CCOC1,4.92096979543497
-7,Glycine,C(C(=O)O)N,4.526465737739071
-8,compound_1,CCN(CC)CC,4.817367072558987
-9,Aspirin,O=C(C)Oc1ccccc1C(=O)O,4.834832673200845
+0,1-(4-fluorophenethyl)-2-methyl-1H-benzimidazole,Cc1nc2ccccc2n1CCc3ccc(F)cc3,4.860272957450335
+1,N-(4-methoxybenzyl)quinazolin-4-amine,COc1ccc(CNc2ncnc3ccccc23)cc1,4.815476668183956
+2,"N-isopropyl-1,3-dimethyl-1H-indol-5-amine",CC(C)Nc1ccc2c(c1)c(C)cn2C,5.118979726577529
+3,N-(4-chlorobenzyl)-4-methylthiazol-2-amine,Cc1csc(NCc2ccc(Cl)cc2)n1,4.358865874134322
+4,1-methyl-3-(4-methoxyphenyl)-5-methyl-1H-pyrazole,COc1ccc(c2cc(C)nn2C)cc1,4.762460870436405
+5,N-(furan-2-ylmethyl)-6-methylquinolin-4-amine,Cc1cc2nc(NCc3ccco3)ccc2cc1,4.794401154931532
+6,N-ethyl-6-methoxybenzo[d]thiazol-2-amine,CCNc1nc2ccc(OC)cc2s1,5.077034634859
+7,"N-(3,4-difluorobenzyl)-4-methylpyrimidin-2-amine",Cc1cnc(NCc2ccc(F)c(F)c2)nc1,4.957340967277542
+8,2-(4-methoxybenzyl)-1-methyl-1H-benzimidazole,COc1ccc(Cc2nc3ccccc3n2C)cc1,4.9201061301410975
+9,"N-(4-methylbenzyl)-5-methyl-1,3,4-thiadiazol-2-amine",Cc1ccc(CNc2nnc(C)s2)cc1,4.4218623248329605

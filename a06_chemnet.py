@@ -23,7 +23,9 @@ from b01_utility import *
 # Original Copyright (c) 2022, Vincent F. Scalfani
 # Modifications made by Elliot Chan, 2025
 # Modifications of note: modularized the visualization steps into a class, use of plotly instead of matplotlib, with interactive maps and dynamic sizing + node spacing
-# continued: base64 molecule image encoding (plotly-specific), graph cosmetic customizability (node sizing, options of displaying 2D images or nodes, coloring), error handling.
+# continued: base64 molecule image encoding (plotly-specific), graph cosmetic customizability (node sizing, options of displaying 2D images or nodes, coloring), error handling
+# added weight method, allowing for graphs to be based on Tanimoto, Tanimoto MCS, or a hybrid weight, with biases towards overall or MCSubstructure determined in the config file
+
 
 class ChemNet:
     def __init__(self, model_name, network_type, weight_method):
@@ -121,6 +123,7 @@ class ChemNet:
                 raise ChemNetError(f"Unexpected error generating scored subsets: {e}")
 
         sorted_subset = sorted(scored_subsets.items(), key=lambda x: x[1], reverse=True)
+        # scored subsets is a dictionary, with key as molecule pair index and value as similarity score
         # sorted subset is a list of tuples, with value 1 as idx and value 2 as the similarity score
 
         # [[DATA SCALING HERE]]
@@ -310,9 +313,9 @@ class ChemNet:
         )
 
         if self.weight_method == 'hybrid':
-            title_text = f"Chemical Space Network Graph: {self.model_name} {self.network_type} compounds | Top {self.top_percent}% similarity | {self.weight_method} | {self.a} bias"
+            title_text = f"Chemical Space Network Graph: {self.model_name} {self.network_type} compounds - Top {self.top_percent}% similarity | {self.weight_method} | {self.a} bias"
         else:
-            title_text = f"Chemical Space Network Graph: {self.model_name} {self.network_type} compounds | Top {self.top_percent}% similarity | {self.weight_method}"
+            title_text = f"Chemical Space Network Graph: {self.model_name} {self.network_type} compounds - Top {self.top_percent}% similarity | {self.weight_method}"
 
         fig = go.Figure(data=[edge_trace, node_trace],
                         layout=go.Layout(

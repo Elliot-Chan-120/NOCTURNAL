@@ -1,5 +1,5 @@
 test_model_1 Final Assessment
 Optimal Hyperparameters: None
-R^2 Score: 0.7045
-RMSE: 0.6700
-MAE: 0.4199
+R^2 Score: 0.7048
+RMSE: 0.6696
+MAE: 0.4203

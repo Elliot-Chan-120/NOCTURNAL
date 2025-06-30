@@ -1,5 +1,6 @@
 test_model_1 Cross_Validation Assessment
+Stacking
 Optimal Hyperparameters: None
-Mean R^2 Score: 0.6612824660612819 
-Mean RMSE: 0.701318564836457 
-Mean MAE: 0.43931869183750283
+Mean R^2 Score: 0.6707994390194582 
+Mean RMSE: 0.6918090052885018 
+Mean MAE: 0.43472923567733124

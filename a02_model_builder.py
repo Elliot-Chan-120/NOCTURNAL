@@ -348,6 +348,7 @@ class ModelBuilder:
 
         content = (
             f"{self.model_name} {file_suffix} Assessment"
+            f"\n{self.model_type}"
             f"\nOptimal Hyperparameters: {self.best_params}"
             f"\nR^2 Score: {r2:.4f}"
             f"\nRMSE: {rmse:.4f}"

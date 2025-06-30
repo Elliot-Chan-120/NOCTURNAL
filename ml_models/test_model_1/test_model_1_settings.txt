@@ -89,6 +89,7 @@ PubchemFP530
 PubchemFP531
 PubchemFP533
 PubchemFP535
+PubchemFP539
 PubchemFP540
 PubchemFP541
 PubchemFP542
