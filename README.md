@@ -85,20 +85,29 @@ def csn_data(model_name):
 
 *Optimized Molecules (First 3 out of 442)*
 >,Target SMILES,pIC50 Values
+> 
 >0,CCCCc1cc2c(c(CCO)cn2C)c(C(=O)CC)c1NC(C)C,6.347707068175809
+> 
 >2,Cc1c(C#N)n(C)c2ccc(NC(C)C)c(C3COCCN3)c12,6.122732753600296
+> 
 >4,CCCCc1c(NC(C)C)c(C(=O)CC)c2c(CCO)cn(C)c2c1N(CC)CC,6.411037333223118
 
 *Optima Molecules (First 3 out of 222)*
 >,Optima SMILES,pIC50 Values
+> 
 >0,CC(C)Nc1ccc2c(c1)c(C)cn2C,5.118979726577529
+> 
 >1,CCCCc1cc(NC(C)C)cc2c(C)cn(C)c12,5.200036623932273
+> 
 >3,Cc1cn(C)c2c(C#N)cc(NC(C)C)cc12,5.200036623932273
 
 *Final Mutant Compounds (First 3 out of 20)*
 >,Final SMILES Candidates,pIC50 Values
+> 
 >0,NS(=O)(=O)CC1(OC=O)CCCC(F)(c2c(F)cc3c([SH]=O)c(OC(F)(F)F)n(NC(S)O[SH](=O)=O)c3c2-c2cccnc2)N1,6.514708531475597
+> 
 >1,CCC(C)Nc1c(Cl)cc2c(c1O)c(S)c(C(C)=O)n2S,6.314668516453233
+> 
 >2,CCc1c(N(O)NO)c(N)c(SC)c2c1c(C)cn2CCN,6.192498368269378
 
 ### ChemNet CSN Graph Demo
