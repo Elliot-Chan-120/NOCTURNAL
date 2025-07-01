@@ -131,7 +131,7 @@ When we hover our mouse over each node / molecule we get their info: SMILES stri
   <p><em>Hover text demonstration in the optimized compound CSN graph</em></p>
 </div>
 
-If you think that the molecules are too cluttered or hard to see, we can either zoom in to the section you want to see, or turn set both 2D molecular imaging and transparent nodes to "False" in the config's second-last section. For the latter, you will have to rely on the SMILES to analyze the drug structure.
+If you think that the molecules are too cluttered or hard to see, we can either zoom in to the section you want to see, or set both 2D molecular imaging and transparent nodes to "False" in the config's second-last section. For the latter, you will have to rely on the SMILES to analyze the drug structure.
 <table>
   <tr>
     <td><img src="readme_images/3_optima_zoom.png" alt="Optima_zoom_img" width="500"></td>
