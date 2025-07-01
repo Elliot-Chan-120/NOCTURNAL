@@ -80,7 +80,7 @@ def csn_data(model_name):
 ### MutaGen Sample Output
 - Model: test_model_1  --> latest iteration
 - Molecule dataset: Tau | Index 25
-- Lead Compound: CC(C)Nc1ccc2c(c1)c(C)cn2C
+- Lead Compound: CC(C)Nc1ccc2c(c1)c(C)cn2C, 5.118979726577529
 - Config settings: see Configuration section of the readme
 
 *Optimized Molecules (First 3 out of 442)*
