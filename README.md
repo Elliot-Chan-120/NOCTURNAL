@@ -151,7 +151,7 @@ If you think that the molecules are too cluttered or hard to see, we can either 
 *This section goes in detail to the core algorithms and background processes that make NOCTURNAL sophisticated and unique*
 
 **[1] Config-driven architecture and automatic config key + folder validations**
-- The 0_config.yaml file allows for customizability of a lot of core processes, like how many attempts one wishes to attempt at making molecular fingerprints as well as default parameters for training future machine learning models
+- The 0_config.yaml file allows for customizability of a lot of core processes, like how many attempts are allowed for making molecular fingerprints as well as default parameters for training future machine learning models
 - Furthermore, file b01_utility.py contains many custom error classes that help pinpoint the user towards the source of any mishaps during runs. E.g. ModelBuilderError, RunModelError etc.
 - The validate_config() function in b01_utility is called upon every single class instantiation throughout the entire pipeline: it validates that all the keys in the config file, and all the required folders are present in their respective places. If those conditions are fulfilled, it loads the config file. Otherwise a custom “ConfigurationError” is raised.
 - The get_fingerprint() function allows for automatic fingerprint type detection upon properly selecting an ML model for running or optimization.
