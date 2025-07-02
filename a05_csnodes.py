@@ -3,6 +3,7 @@ import multiprocessing
 import os
 from multiprocessing import Pool
 from pathlib import Path
+import random
 
 from b01_utility import *
 
@@ -13,12 +14,13 @@ from rdkit.Chem import rdFMCS
 from rdkit import DataStructs
 
 import pandas as pd
+import numpy as np
 
 # Adapted from code by Vincent F. Scalfani (BSD 3-Clause License)
 # Original Copyright (c) 2022, Vincent F. Scalfani
 # Modifications made by Elliot Chan, 2025
 # Modification list: modularized the non-function calculation steps into a class / function toolset which are called on together by the function "csn_dataprocessor"
-# continued: added error handling
+# continued: added error handling, and various node sampling modes to prevent performance bottlenecks during pairwise similarity calculations
 
 def tan_similarity(nodes):
     """generate dict containing all node pair subsets and their smiles + mols + tanimoto similarity values"""
@@ -73,6 +75,12 @@ def tan_similarity(nodes):
     return subsets
 
 
+def mcs_optimized_sampling(node_dict, target_size):
+    nodes = node_dict
+    return dict(sorted(nodes.items(), key=lambda x: x[1]['tan_similarity'],
+                       reverse=True)[:target_size])
+
+
 def tc_mcs(mol1, mol2, key):
     if mol1 is None or mol2 is None:
         return key, 0.0
@@ -93,7 +101,7 @@ def tc_mcs(mol1, mol2, key):
 
 class CSNodes:
     """Creates node data using smiles data gathered from ML model results"""
-    def __init__(self, model_name, network_type):
+    def __init__(self, model_name, network_type, filter_strategy=None):
         if not model_name or not isinstance(model_name, str):
             raise ValueError("model_name must be a non-empty string")
 
@@ -127,6 +135,9 @@ class CSNodes:
         else:
             raise ValueError("Invalid Chemical Space Network Type Detected. Select between: Optimized / Optima")
 
+        # for extremely large datasets, this is the strategy that we are going to employ
+        # 2 options - 'x' top pIC50, or hierarchical random sampling
+        self.filter_strategy = filter_strategy
 
 # need to generate node data -> keys = SMILES, values = pIC50 values
 # filter out structures that are fragmented
@@ -168,12 +179,65 @@ class CSNodes:
             if '.' not in df_smiles[idx]:
                 nodes.update({df_smiles[idx]: df_potency[idx]})
 
-        return nodes
+        if self.filter_strategy == 'balanced':
+            return self.balanced_sampling(nodes)
+        elif self.filter_strategy == 'performance':
+            return self.performance_sampling(nodes)
+        else:
+            return nodes
 
-    def targeted_save(self, data, datatype):
 
-        savepath = Path(self.storage) / f"{self.model_name}_{self.network_type}_{datatype}.pkl"
+    def balanced_sampling(self, node_dict):
+        """Splits nodes into potency groups and samples proportionally from each"""
+        # split nodes into levels by their potency "level" determined by quartiles
+        nodes = node_dict
+        potencies = np.array(list(nodes.values()))
+        perc_split = np.percentile(potencies, [25, 50, 75])
 
+        sorted_samples = {}
+        for smile, potency in nodes.items():
+            if potency <= perc_split[0]:
+                level = 0
+            elif potency <= perc_split[1]:
+                level = 1
+            elif potency <= perc_split[2]:
+                level = 2
+            else:
+                level = 3
+            # add level if it's the first encounter
+            if level not in sorted_samples:
+                sorted_samples[level] = []
+            sorted_samples[level].append((smile, potency))
+
+        # now we select from each stratum
+        selected_nodes = {}
+        samples_per_level = self.cfg['target_size'] // len(sorted_samples)
+
+        for level, info in sorted_samples.items():
+            sample_size = min(samples_per_level, len(info))
+            selected = random.sample(info, sample_size)
+            for smile, potency in selected:
+                selected_nodes[smile] = potency
+
+        return selected_nodes
+
+
+    def performance_sampling(self, node_dict):
+        """
+        Selects the top nodes with the greatest potencies
+        """
+        nodes = node_dict
+
+        # in one line we just sort the nodes by decreasing pIC50 values then take the top ones
+        return dict(sorted(nodes.items(), key=lambda x: x[1],
+                           reverse=True)[:self.cfg['target_size']])
+
+
+    def targeted_save(self, data, datatype, filter_strategy):
+        if filter_strategy is None:
+            savepath = Path(self.storage) / f"{self.model_name}_{self.network_type}_{datatype}.pkl"
+        else:
+            savepath= Path(self.storage) / f"{self.model_name}_{self.network_type}_{filter_strategy}_{datatype}.pkl"
         try:
             if savepath.exists():
                 backup_path = savepath.with_suffix('.pkl.backup')
@@ -190,18 +254,26 @@ class CSNodes:
             raise CSNDataError(f"Error saving {datatype}: {e}")
 
 
-def csn_dataprocessor(model_name, network_type):
+def csn_dataprocessor(model_name, network_type, filter_strategy=None):
     """
     Need to run this twice, with both optimized and optima as the network_type settings in order to get the full dataset
     :return: 2 pkl files containing subset and node data dictionaries -> subsets contain tanimoto similarity values
     """
-    item = CSNodes(model_name, network_type)
+    # first calculate tanimoto data and add it to subsets dict
+    item = CSNodes(model_name, network_type, filter_strategy)
     node_data = item.get_nodes()
 
     subsets = tan_similarity(node_data)
     if not subsets:
         raise CSNDataError("No molecular pairs generated for similarity calculations")
 
+    # since MCS calculations take very long to calculate, we can intercept the process if we chose the 'optimized' sampling method
+    # mcs_optimized_sampling() will take only the greatest similarity molecules, to save expensive MCS calculations for...
+    # more meaningful structural relationships.
+    if filter_strategy == 'mcs_optimized':
+        subsets = mcs_optimized_sampling(subsets, item.cfg['target_size'])
+
+    # MCS calculations start here
     num_cpus = max(1, multiprocessing.cpu_count() - 2)
 
     mol_tuples = []
@@ -215,5 +287,5 @@ def csn_dataprocessor(model_name, network_type):
         subsets[key].update({"tan_mcs": round(tan_mcs, 3)})
 
 
-    item.targeted_save(subsets, "subsets")
-    item.targeted_save(node_data, "node_data")
+    item.targeted_save(subsets, "subsets", filter_strategy)
+    item.targeted_save(node_data, "node_data", filter_strategy)

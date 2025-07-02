@@ -28,7 +28,7 @@ from b01_utility import *
 
 
 class ChemNet:
-    def __init__(self, model_name, network_type, weight_method):
+    def __init__(self, model_name, network_type, weight_method, filter_strategy=None):
         if not model_name or not isinstance(model_name, str):
             raise ValueError("model_name must be a non-empty string")
 
@@ -50,14 +50,19 @@ class ChemNet:
         if target_folder_name not in folders:
             raise ChemNetError(f"{self.model_name} does not exist in the network data storage: Check if this is a valid stored model or if it's saved data has been processed by a05")
 
-        # tanimoto similarity calculation dataframe filepath
-        self.tandata_path  = self.network_path / target_folder_name  # graph folder)
+        # tanimoto similarity calculation dataframe folderpath
+        self.tandata_path  = self.network_path / target_folder_name  # graph folder
 
         # handle improper network type
         self.network_type = network_type
         if self.network_type not in ['optima', 'optimized']:
             raise ValueError(f"Invalid network_type: {self.network_type}. Must be either 'optima' or 'optimized'")
 
+        # handle improper sampling_strategy option choice, needs to align with the other module
+        self.filter_strategy = filter_strategy
+        if self.filter_strategy is not None and self.filter_strategy not in ['balanced', 'performance', 'mcs_optimized']:
+            raise ChemNetError(f"Invalid filter_strategy parameter: {self.filter_strategy}. "
+                               f"You must pick from the following: balanced, performance, or mcs_optimized")
 
         # initialize settings
         self.scaling_constant = 0.4
@@ -75,6 +80,7 @@ class ChemNet:
         if not isinstance(self.cfg['colorscale'], str):
             raise ChemNetError("Invalid colorscale configuration")
 
+
         # we'll need this later
         self.node_count = None
 
@@ -85,8 +91,12 @@ class ChemNet:
 
     def graph_data(self):
         """Determine greatest % of subset data to display"""
-        subsets_filepath = Path(self.tandata_path) / f"{self.model_name}_{self.network_type}_subsets.pkl"
-        nodes_filepath = Path(self.tandata_path) / f"{self.model_name}_{self.network_type}_node_data.pkl"
+        if self.filter_strategy:
+            subsets_filepath = Path(self.tandata_path) / f"{self.model_name}_{self.network_type}_{self.filter_strategy}_subsets.pkl"
+            nodes_filepath = Path(self.tandata_path) / f"{self.model_name}_{self.network_type}_{self.filter_strategy}_node_data.pkl"
+        else:
+            subsets_filepath = Path(self.tandata_path) / f"{self.model_name}_{self.network_type}_subsets.pkl"
+            nodes_filepath = Path(self.tandata_path) / f"{self.model_name}_{self.network_type}_node_data.pkl"
 
         # safely load pickle files - handles file.exist and st_size
         subsets = self.pkl_safeload(subsets_filepath)

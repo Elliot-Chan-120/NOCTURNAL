@@ -17,11 +17,14 @@ Key Modifications Made:
 - Modularized codeblocks into classes and function toolsets to:
 	a) generate calculated data (Tanimoto similarity, MCS)
 	b) visualize the chemical space network
+- added 3 intelligent node sampling modes to prevent performance bottlenecks in pairwise similarity calculations
+- pIC50 determines highlight colour instead of pKi
 - Edge weight for constructing the CSN graph can be changed between Tanimoto similarity, MCS, or a hybrid method combining both, where the bias towards one can be set in the config file -> 'tanimoto_bias' (default = 0.5)
 - Replaced matplotlib with Plotly for interactive visualization
 - Implemented adaptive 2D molecular image sizing
 - Adaptive network density to subset size
 - Graph cosmetic customizability from config file
+- Interactive nodes with hover text displaying: SMILES, pIC50 % rank, pIC50
 - Various error handling blocks 
 
 

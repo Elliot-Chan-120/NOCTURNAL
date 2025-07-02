@@ -23,11 +23,11 @@ def demo_optimizecompound():
 
 def csn_data(model_name):
     if __name__ == '__main__':
-        csn_dataprocessor(model_name, "optimized")
-        csn_dataprocessor(model_name, "optima")
+        csn_dataprocessor(model_name, "optimized", filter_strategy='performance')
+        csn_dataprocessor(model_name, "optima", filter_strategy='balanced')
 
 def csn_network(model_name, weight_method):
-    ChemNet(model_name, "optimized", weight_method).graph_data()
-    ChemNet(model_name, "optima", weight_method).graph_data()
+    ChemNet(model_name, "optimized", weight_method, filter_strategy='performance').graph_data()
+    ChemNet(model_name, "optima", weight_method, filter_strategy='balanced').graph_data()
 
-
+csn_network('test_model_1', 'hybrid')

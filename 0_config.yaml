@@ -8,6 +8,7 @@ model_folder: "ml_models"
 input_fp_folder: "input_fingerprint_data"
 database: "database"
 padel_xmls: "padel_fp_xmls"
+optimizer_database: "optimizer_database"
 network_folder: "network_folder"
 
 # [BIOACTIVITY DATABASE FILES]
@@ -89,7 +90,7 @@ xgb_params:
 
 
 # =====================================
-# MOLECULE OPTIMIZER SETTINGS
+# MutaGen SETTINGS
 # =====================================
 candidates: 20    # how many copies of the starting molecule you want to undergo mutations
 iterations: 100   # how many times you want to introduce random mutations
@@ -98,8 +99,17 @@ error_threshold: -0.05   # when we hit a plateau, how much are you willing to sa
 success_threshold: 0.05   # what is the minimum performance increase you will accept?
 retain_threshold: 3  # how many times the molecule can fail to improve before exploring other optimization routes
 
+
 # =====================================
-# CHEM SPACE NETWORK GRAPH SETTINGS
+# CSNodes SETTINGS
+# sampling strategy options: balanced, performance, mcs_optimized
+# =====================================
+target_size: 100   # the target amount of nodes you want to show up in the CSN visualizations
+# Note: please use when coming across big datasets (200+) and using one of the sampling strategies to prevent bottlenecks
+
+
+# =====================================
+# ChemNet SETTINGS
 # =====================================
 colorscale: Viridis
 transparent_nodes: True  # makes nodes transparent if True -> lets you see the molecules better

@@ -76,11 +76,6 @@ Adaptive layout:
 - thorough error handling (I hope)
 - graph cosmetic customizability from config file (can toggle the presence / absence of nodes, 2D images)
 
-Future Improvements:
-- Logging functionality
-- Continued enhancements towards MutaGen's algorithm.
-- Chemical space network statistics
-- Displaying optima and optimized compounds together
 
 NOCTURNAL v2.4.0 - June 22 2025
 Aromatic structure compatibility / optimization capability
@@ -89,4 +84,27 @@ Enhanced MutaGen by allowing it to work with aromatic structures with the follow
 - Intelligent fragment selection based on atom aromaticity: aromatic / non-aromatic structure-compatible fragment lists
 - Kekulization and aromaticity management prior to molecular combinations
 - Added a safe_selection() method with error handling during add mutations - prevents 'bad' additions with empty fragments
+
+
+
+NOCTURNAL v2.5.0 - July 2 2025
+Bottleneck solutions in a05_csnodes.py
+a05_csnodes.py now allows for 3 intelligent sampling modes for MutaGen results that contain an extensive amount of molecules
+- 'balanced': evenly samples across potency quartiles
+- 'performance': selects the top compounds by pIC50
+- 'mcs_optimized': prefilters by overall Tanimoto similarity and selects for the top 'n' to accelerate MCS calculations
+	- NOTE: mcs_optimized samples may still require a significant amount of time to process since it requires all overall Tanimoto calculations prior to sorting and cutting down time on more intricate MCS calculations
+
+Surrounding changes:
+- Adjusted ChemNet, utility and config to allow for intelligent sampling functionality and keeping track of what sampling strategies were used on which dataset
+- Reorganized README.md to accommodate these changes
+
+
+
+Future Improvements:
+- Logging functionality
+- Continued enhancements towards MutaGen's algorithm.
+- Chemical space network statistics
+- Displaying optima and optimized compounds together
+
 

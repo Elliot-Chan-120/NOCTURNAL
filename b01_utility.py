@@ -67,7 +67,8 @@ def validate_config():
         'random_forest_params',
         'candidates', 'iterations', 'target_increase', 'error_threshold', 'success_threshold', 'retain_threshold',
         'data_scout_csv', 'auto_save_model', 'n_features',
-        'colorscale', 'transparent_nodes', 'node_toggle', 'label_toggle', '2D_molecules', 'node_size', 'tanimoto_bias'
+        'colorscale', 'transparent_nodes', 'node_toggle', 'label_toggle', '2D_molecules', 'node_size', 'tanimoto_bias',
+        'target_size'
     ]
 
     for key in required_keys:
@@ -75,8 +76,8 @@ def validate_config():
             raise ConfigurationError(f"Missing Required Configuration Key: {key}")
 
     # 2. Now access this config and make sure all the necessary starting folders are there
-    dir_keys = ['predictions', 'input_folder', 'assessments',
-                'model_folder', 'database', 'padel_xmls']
+    dir_keys = ['predictions', 'input_folder', 'assessments', 'model_folder',
+                'database', 'padel_xmls', 'optimizer_database']
 
     required_dirs = [cfg[k] for k in dir_keys]
 

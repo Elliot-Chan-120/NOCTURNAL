@@ -12,7 +12,7 @@
 NOCTURNAL is an integrated computational framework that combines ChEMBL database mining, machine learning-based potency prediction, and an integrated approach to molecular optimization for drug discovery workflows. 
 As long as a ChEMBL dataset exists for any given target protein of interest, users can rapidly generate machine learning models trained on that drug-structure vs. potency data via NOCTURNAL's modular data pipeline. This allows for potency predictions to be made on candidate molecules.
 
-The system can then deploy these models in a novel evolutionary algorithm 'MutaGen' to generate optimized molecular candidates while maintaining drug-like properties. These compounds can then be graphed through the interactive chemical space network visualization module 'ChemNet'.
+The system can then deploy these models in a novel evolutionary algorithm 'MutaGen' to generate optimized molecular candidates while maintaining drug-like properties. These compounds can then be graphed through the interactive chemical space network (CSN) visualization module 'ChemNet'.
 
 
 ## Key Features
@@ -29,6 +29,13 @@ The system can then deploy these models in a novel evolutionary algorithm 'MutaG
   - Custom exception classes (e.g. ModelBuilderError, RunModelError) provide targeted feedback, guiding users toward any issues
   - Config file-loading coupled with validation of config keys and required directories ensures consistent runtime and prevents pipeline-breaking errors
   - Graceful fallback mechanisms implemented throughout critical points throughout the pipeline, such as in PaDEL fingerprinting and ChemNet visualizations
+- **Molecular Dataset Preprocessing**
+  - a05_csnodes.py is designed for high-performance preprocessing of molecular datasets for use in ChemNet / CSN visualizations
+  - Features 3 sampling strategies to optimize chemical diversity vs. computational cost
+    - 'balanced': evenly samples across potency quartiles
+    - 'performance': selects the top compounds by pIC50
+    - 'mcs_optimized': prefilters by overall Tanimoto similarity and selects for the top 'n' to accelerate MCS calculations
+      - NOTE: mcs_optimized samples may still require a siginifcant amount of time to process since it requires all overall Tanimoto calculations prior to sorting and cutting down time on more intricate MCS calculations
 
 *Core Modules*
 - **MutaGen: NOCTURNAL's Molecular Optimization Module**
@@ -42,7 +49,6 @@ The system can then deploy these models in a novel evolutionary algorithm 'MutaG
   - Intelligent network scaling responsiveness to edge data quantity preserves visual clarity
   - 2D structure molecular imaging, with molecule colours indicating % rank potency, simultaneously handling outliers
   - Multi-modal similarity system: supports graph generation based on overall, substructure or hybrid structural similarity between molecules
-
 
 
 ## Workflow with Core Classes
@@ -73,16 +79,40 @@ def demo_runmodel():
 def demo_optimizecompound():
     MutaGen('test_model_1').init_optimize()
 
-# 6 generate chemical space network graphs for both optimized and optima compounds
-# param: ML model (trained, SMILES file and MutaGen outputs present)
+    
+# [NOTE]
+# At this point, you should look at the optimized and optima datasets produced...
+# and take note of datasets resulting in 200+ molecules and/or ones with highly complex molecules
+# The downstream module a05_csnodes.py greatly increases in time needed to perform their calculations,
+# which is why I added in the intelligent sampling capabilities to suit the needs of the user / dataset
+
+# For optimized, I only want to see the compounds that gave me the highest potency / performance.
+# For optima, I care more about the chemical diversity of the set.
+# So I selected performance for the optimized compounds, and balanced for the optima compounds
+
+
+# 6 generate chemical space network data for both optimized and optima compounds
+# params: ML model (trained, SMILES file and MutaGen outputs present), compound type, sampling strategy (None by default)
 def csn_data(model_name):
     if __name__ == '__main__':
-        csn_dataprocessor(model_name, "optimized")
-        csn_dataprocessor(model_name, "optima")
+        csn_dataprocessor(model_name, "optimized", filter_strategy='performance')
+        csn_dataprocessor(model_name, "optima", filter_strategy='balanced')
+
+csn_data('test_model_1')
+        
+
+# 7 generate CSN interactive graphs for both compound types
+# params: ML model (same requirements as previous)
+# NOTE: the filter_strategy has to be consistent for the compound type, otherwise the specific files won't be found
+def csn_network(model_name, weight_method):
+    ChemNet(model_name, "optimized", weight_method, filter_strategy='performance').graph_data()
+    ChemNet(model_name, "optima", weight_method, filter_strategy='balanced').graph_data()
+
+csn_network('test_model_1', 'hybrid')
 ```
 
 ### MutaGen Sample Output
-- Model: test_model_1  --> latest iteration
+- Model: test_model_1 
 - Molecule dataset: Tau | Index 25
 - Lead Compound: CC(C)Nc1ccc2c(c1)c(C)cn2C, 5.118979726577529
 - Config settings: see Configuration section of the readme
@@ -116,7 +146,9 @@ def csn_data(model_name):
 
 ### ChemNet CSN Graph Demo
 - Molecule dataset: Tau | Index 25
-- Model: test_model_1 from a previous README.md version, these are not the same molecules as above
+- Model: test_model_1
+- Optimized graph settings: filter_strategy='performance'
+- Optima graph settings: filter_strategy='balanced'
 - Config settings: see Configuration section of the readme
 <table>
   <tr>
@@ -132,7 +164,7 @@ def csn_data(model_name):
 When we hover our mouse over each node / molecule we get their info: SMILES string, pIC50 % rank, and raw pIC50 value.
 <div align="center">
   <img src="readme_images/5_hover_text.png" alt="Hover text image" width="600">
-  <p><em>Hover text demonstration in the optimized compound CSN graph</em></p>
+  <p><em>Hover text demonstration in the optima compound CSN graph</em></p>
 </div>
 
 If you think that the molecules are too cluttered or hard to see, we can either zoom in to the section you want to see, or set both 2D molecular imaging and transparent nodes to "False" in the config's second-last section. For the latter, you will have to rely on the SMILES to analyze the drug structure.
@@ -194,6 +226,20 @@ If you think that the molecules are too cluttered or hard to see, we can either 
 - SMILES strings, % pIC50 rank, and raw pIC50 values appear in hover tooltips
 - Multi-stage data validation with a custom exception class and graceful fallback mechanisms to prevent breaking the entire visualization, as well as comprehensive file operation safety checks.
 
+**[6] CSNodes - ChemNet's backend**
+- a05_csnodes.py powers the back-end data processing for ChemNet, and efficiently handles large molecular datasets before ChemNet's visualization process
+- MutaGen can output a large amount of molecules, which can exponentially lengthen the time needed to generate CSN graphs as every single pairwise combination must be accounted for (in default mode)
+- However, users can select between one of 3 intelligent sampling modes and define what their target_size is in the config to determine how many nodes / molecules they want to see in the CSN graph
+
+- These Intelligent Sampling Modes allow for performance bottleneck prevention during molecular similarity calculations
+  - mode 1: 'balanced'
+    - splits the overall pIC50 range into quartiles and evenly samples molecules across each quartile, ensuring chemical diversity in terms of potency
+  - mode 2: 'performance'
+    - selects the top pIC50 candidates to focus visualizations on the most potent molecules
+  - mode 3: 'mcs_optimized'
+    - intercepts the dataframe right after overall Tanimoto structure calculations, and takes the greatest-scoring similarity pairs
+    - this reduces the number of expensive MCS calculations on less meaningful relationships, thus speeding up overall graph generation without severely compromising relationship relevance
+
 
 ## Future Improvements
 - MutaGen adaptive fragments and further improvements to kekulization of certain compounds
@@ -228,6 +274,15 @@ error_threshold: -0.05   # when we hit a plateau, how much are you willing to sa
 success_threshold: 0.05   # what is the minimum performance increase you will accept?
 retain_threshold: 3  # how many times the molecule can fail to improve before exploring other optimization routes
 
+
+# =====================================
+# CSNodes SETTINGS
+# sampling strategy options: balanced, performance, mcs_optimized
+# =====================================
+target_size: 100   # the target amount of nodes you want to show up in the CSN visualizations
+# Note: please use when coming across big datasets (200+) and using one of the sampling strategies to prevent bottlenecks
+
+
 # =====================================
 # ChemNet SETTINGS
 # =====================================
@@ -239,7 +294,6 @@ label_toggle: False  # just displays the hover text
 node_size: 2
 # NOTE: this is only active when the weight_method parameter for ChemNet is 'hybrid'
 tanimoto_bias: 0.5  # determines how much weight the plot is biased towards: overall similarity (1) or maximum common substructure (0)
-
 ```
 
 
@@ -270,6 +324,7 @@ tanimoto_bias: 0.5  # determines how much weight the plot is biased towards: ove
 - Modularized codeblocks into classes and function toolsets to:
 	a) generate calculated data (Tanimoto similarity, MCS)
 	b) visualize the chemical space network
+- intelligent node sampling modes to prevent performance bottlenecks in pairwise similarity calculations
 - pIC50 determines highlight colour instead of pKi
 - Edge weight for constructing the CSN graph can be changed between Tanimoto similarity, MCS, or a hybrid method combining both, where the bias towards one can be set in the config file -> 'tanimoto_bias' (default = 0.5)
 - Replaced matplotlib with Plotly for interactive visualization
