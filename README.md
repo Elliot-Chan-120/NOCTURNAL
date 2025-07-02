@@ -33,7 +33,7 @@ The system can then deploy these models in a unique drug optimization algorithm,
   - a05_csnodes.py is designed for high-performance preprocessing of molecular datasets for use in ChemNet / CSN visualizations
   - Features 3 sampling strategies to optimize chemical diversity vs. computational cost
     - 'balanced': evenly samples across potency quartiles
-    - 'performance': selects the top compounds by pIC50
+    - 'performance': selects the top compounds by potency (pIC50)
     - 'mcs_optimized': prefilters by overall Tanimoto similarity and selects for the top 'n' to accelerate MCS calculations
       - NOTE: mcs_optimized samples may still require a siginifcant amount of time to process since it requires all overall Tanimoto calculations prior to sorting and cutting down time on more intricate MCS calculations
 
