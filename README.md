@@ -59,7 +59,7 @@ The system can then deploy these models in a novel evolutionary algorithm 'MutaG
 def demo_datascout():
     data_scout("Tau", 20)
 
-# 2 ChEMBL data acquisition and preprocessing 
+# 2 ChEMBL data acquisition and processing 
 #  params: Target protein, Index #
 def demo_dataseekprocess():
     DataSeekProcess("Tau", 25, "PubChem").run()
@@ -74,7 +74,7 @@ def demo_modelbuilder():
 def demo_runmodel():
     RunModel("test_model_1", "benchmark_smile").run_predictions()
 
-# 5 takes the most potent compound from file and attempt to optimize it with MutaGen
+# 5 takes the most potent compound from file and attempts to optimize it with MutaGen
 # param: ML model (trained and ran a SMILES file)
 def demo_optimizecompound():
     MutaGen('test_model_1').init_optimize()
