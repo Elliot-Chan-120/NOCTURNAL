@@ -60,7 +60,7 @@ def demo_datascout():
     data_scout("Tau", 20)
 
 # 2 ChEMBL data acquisition and processing 
-#  params: Target protein, Index #
+#  params: Target protein, Index #, Fingerprint setting (all xml settings in padel_fp_xmls)
 def demo_dataseekprocess():
     DataSeekProcess("Tau", 25, "PubChem").run()
 
@@ -70,7 +70,7 @@ def demo_modelbuilder():
     ModelBuilder('test_model_1').build()
 
 # 4 given a .smi file containing chemical smiles, predict all compounds' potencies
-# params: ML model (trained), SMILES file
+# params: ML model (trained), SMILES file in "input_folder"
 def demo_runmodel():
     RunModel("test_model_1", "benchmark_smile").run_predictions()
 
@@ -81,7 +81,7 @@ def demo_optimizecompound():
 
     
 # [NOTE]
-# At this point, you should look at the optimized and optima datasets produced...
+# At this point, you should look at the optimized and optima datasets produced in the "predictions" folder...
 # and take note of datasets resulting in 200+ molecules and/or ones with highly complex molecules
 # The downstream module a05_csnodes.py greatly increases in time needed to perform their calculations,
 # which is why I added in the intelligent sampling capabilities to suit the needs of the user / dataset
