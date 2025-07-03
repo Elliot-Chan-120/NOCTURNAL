@@ -9,8 +9,8 @@
 
 ## Abstract
 
-NOCTURNAL is an integrated computational framework that combines ChEMBL database mining, machine learning-based potency prediction, and an integrated approach to molecular optimization for drug discovery workflows. 
-As long as a ChEMBL dataset exists for any given target protein of interest, users can rapidly generate machine learning models trained on that drug-structure vs. potency data via NOCTURNAL's modular data pipeline. This allows for potency predictions to be made on candidate molecules.
+NOCTURNAL is an integrated computational framework that combines ChEMBL database mining, machine learning-based potency prediction, and an integrated approach to molecular optimization for drug discovery workflows.
+As long as a ChEMBL dataset exists for any given disease or target protein of interest, users can rapidly train and generate machine learning models on drug-structure vs. potency data on that chosen target via NOCTURNAL's modular data pipeline. This allows for potency predictions to be made on candidate molecules and more advanced applications.
 
 The system can then deploy these models in a unique drug optimization algorithm, 'MutaGen', to generate optimized molecular candidates while maintaining drug-like properties. These compounds can then be graphed through the interactive chemical space network (CSN) visualization module 'ChemNet'.
 
