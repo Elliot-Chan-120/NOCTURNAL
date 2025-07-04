@@ -241,14 +241,6 @@ If you think that the molecules are too cluttered or hard to see, we can either 
     - this reduces the number of expensive MCS calculations on less meaningful relationships, thus speeding up overall graph generation without severely compromising relationship relevance
 
 
-## Future Improvements
-- MutaGen adaptive fragments and further improvements to kekulization of certain compounds
-- Choose which molecule to start optimizing: lead candidate (input), lead from database, or custom HC chain
-- More CSN statistics
-- logging instead of print statements
-- Benchmarking functions
-- Datascout improvements - IC50 range
-
 ### Model Performance Metrics
 During training, the following metrics are assessed and output in the assessments folder
 - **Cross-validation and Test set Assessment**
