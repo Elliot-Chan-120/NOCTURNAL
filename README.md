@@ -79,7 +79,7 @@ def demo_runmodel():
 # Optima: molecules that failed to improve 'x' amount of times (3 default)
 # Optimized: molecules that improved past the potency unit target_increase (1 default: 10x)
 
-# 5 takes the most potent compound from file and attempts to optimize it with MutaGen
+# 5 take the most potent compound from file and attempt to generate optimized molecules with MutaGen
 # param: ML model (trained and ran a SMILES file)
 def demo_optimizecompound():
     MutaGen('test_model_1').init_optimize()
