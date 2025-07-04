@@ -37,13 +37,9 @@ NOCTURNAL v2.1.0 May 5th 2025
 	- "[model_name]_optimized_compounds.csv": successful compounds that have been optimized to meet or exceed the pIC50 target improvements
 
 - Added a function in b01_utility: get_fingerprint(config, model_name)
-	- allows classes to automatically obtain the fingerprint configuration the model was trained on. Repeatedly specifying the fingerprint method across all classes is no longer necessary. 
+	- allows classes to automatically obtain the fingerprint configuration the model was trained on. Repeatedly specifying the fingerprint method across all classes is no longer necessary.
 
-## Future improvements: 
-- Chemical space analysis + visualizations
-- Logging instead of print statements
-- Safety analysis
-- Optimized + Optima Compound Visualization
+ - 
 
 NOCTURNAL v2.2.0 June 11th 2025
 Improvements to the MutaGen algorithm
@@ -101,10 +97,12 @@ Surrounding changes:
 
 
 
-Future Improvements:
+## Future improvements: 
 - Logging functionality
-- Continued enhancements towards MutaGen's algorithm.
+- Continued enhancements towards MutaGen's algorithm: adadptive fragments and kekulization improvements
 - Chemical space network statistics
-- Displaying optima and optimized compounds together
+- benchmarking functions
+- choose which compound to start optimizing
+- datascout improvements - IC50 ranges
 
 
