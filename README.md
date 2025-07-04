@@ -74,6 +74,11 @@ def demo_modelbuilder():
 def demo_runmodel():
     RunModel("test_model_1", "benchmark_smile").run_predictions()
 
+# [NOTE]
+# MutaGen (below) is going to output two csv's of interest: optimized and optima molecules
+# Optima: molecules that failed to improve 'x' amount of times (3 default)
+# Optimized: molecules that improved past the potency unit target_increase (1 default: 10x)
+
 # 5 takes the most potent compound from file and attempts to optimize it with MutaGen
 # param: ML model (trained and ran a SMILES file)
 def demo_optimizecompound():
@@ -179,8 +184,8 @@ If you think that the molecules are too cluttered or hard to see, we can either 
   </tr>
 </table>
 
-## Architecture
-*This section goes in detail to the core algorithms and background processes that make NOCTURNAL sophisticated and unique*
+## NOCTURNAL's Core and Algorithmic Frameworks
+*This section is an in-depth technical architecture overview that goes over the core algorithms and background processes that power NOCTURNAL*
 
 **[1] Config-driven architecture and automatic config key + folder validations**
 - The 0_config.yaml file allows for customizability of a lot of core processes, like how many attempts are allowed for making molecular fingerprints as well as default parameters for training future machine learning models
