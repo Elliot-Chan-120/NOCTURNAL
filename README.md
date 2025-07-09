@@ -28,7 +28,7 @@ The system can then deploy these models in a unique drug optimization algorithm,
 - **Error Handling and Validation**
   - Custom exception classes (e.g. ModelBuilderError, RunModelError) provide targeted feedback, guiding users toward any issues
   - Config file-loading coupled with validation of config keys and required directories ensures consistent runtime and prevents pipeline-breaking errors
-  - Graceful fallback mechanisms implemented throughout critical points throughout the pipeline, such as in PaDEL fingerprinting and ChemNet visualizations
+  - Graceful fallback mechanisms implemented in critical points throughout the pipeline, such as in PaDEL fingerprinting and ChemNet visualizations
 - **Molecular Dataset Preprocessing**
   - a05_csnodes.py is designed for high-performance preprocessing of molecular datasets for use in ChemNet / CSN visualizations
   - Features 3 sampling strategies to optimize chemical diversity vs. computational cost
