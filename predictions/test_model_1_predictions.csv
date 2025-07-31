@@ -3,7 +3,7 @@
 1,N-(4-methoxybenzyl)quinazolin-4-amine,COc1ccc(CNc2ncnc3ccccc23)cc1,4.815476668183956
 2,"N-isopropyl-1,3-dimethyl-1H-indol-5-amine",CC(C)Nc1ccc2c(c1)c(C)cn2C,5.118979726577529
 3,N-(4-chlorobenzyl)-4-methylthiazol-2-amine,Cc1csc(NCc2ccc(Cl)cc2)n1,4.358865874134322
-4,1-methyl-3-(4-methoxyphenyl)-5-methyl-1H-pyrazole,COc1ccc(c2cc(C)nn2C)cc1,4.762460870436405
+4,CHEMBL176896,CC(=O)O/N=C1/C(c2c(O)[nH]c3ccccc23)=Nc2ccccc21,6.071247040738312
 5,N-(furan-2-ylmethyl)-6-methylquinolin-4-amine,Cc1cc2nc(NCc3ccco3)ccc2cc1,4.794401154931532
 6,N-ethyl-6-methoxybenzo[d]thiazol-2-amine,CCNc1nc2ccc(OC)cc2s1,5.077034634859
 7,"N-(3,4-difluorobenzyl)-4-methylpyrimidin-2-amine",Cc1cnc(NCc2ccc(F)c(F)c2)nc1,4.957340967277542
