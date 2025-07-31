@@ -119,37 +119,41 @@ csn_network('test_model_1', 'hybrid')
 ### MutaGen Sample Output
 - Model: test_model_1 
 - Molecule dataset: Tau | Index 25
-- Lead Compound: CC(C)Nc1ccc2c(c1)c(C)cn2C, 5.118979726577529
+- Lead Compound: CHEMBL176896,CC(=O)O/N=C1/C(c2c(O)[nH]c3ccccc23)=Nc2ccccc21,6.071247040738312
 - Config settings: see Configuration section of the readme
 
-*Optimized Molecules (First 3 out of 442)*
->,Target SMILES,pIC50 Values
+*Optimized Molecules (First 3 out of 64)*
+> ,Target SMILES,pIC50 Values
 > 
->0,CCCCc1cc2c(c(CCO)cn2C)c(C(=O)CC)c1NC(C)C,6.347707068175809
+>0,N=C1C(c2c(O)[nH]c3ccccc23)=Nc2cc(S(=O)O)ccc21,7.165922800132628
 > 
->2,Cc1c(C#N)n(C)c2ccc(NC(C)C)c(C3COCCN3)c12,6.122732753600296
+>3,O=S(O)c1ccc2c(c1)N=C(c1c(O)[nH]c3ccccc13)C2,7.165922800132628
 > 
->4,CCCCc1c(NC(C)C)c(C(=O)CC)c2c(CCO)cn(C)c2c1N(CC)CC,6.411037333223118
+>4,O=S(O)c1ccc2c(c1Br)N=C(c1c(O)[nH]c3ccccc13)C2,7.165922800132628
 
-*Optima Molecules (First 3 out of 222)*
->,Optima SMILES,pIC50 Values
+*Optima Molecules (First 3 out of 332)*
+> ,Optima SMILES,pIC50 Values
 > 
->0,CC(C)Nc1ccc2c(c1)c(C)cn2C,5.118979726577529
+> 0,O/N=C1/C(c2c(O)[nH]c3ccccc23)=Nc2ccccc21,6.856223652437791
 > 
->1,CCCCc1cc(NC(C)C)cc2c(C)cn(C)c12,5.200036623932273
+> 1,CC(=O)O/N=C1/C(c2c(O)[nH]c3ccc(C4COCCN4)cc23)=Nc2ccccc21,5.334240219776008
 > 
->3,Cc1cn(C)c2c(C#N)cc(NC(C)C)cc12,5.200036623932273
+> 2,CC(=O)O/N=C1/C(c2c(O)[nH]c3ccc(N)cc23)=Nc2ccccc21,5.503766679455064
 
 *Final Mutant Compounds (First 3 out of 20)*
 >,Final SMILES Candidates,pIC50 Values
-> 
->0,NS(=O)(=O)CC1(OC=O)CCCC(F)(c2c(F)cc3c([SH]=O)c(OC(F)(F)F)n(NC(S)O[SH](=O)=O)c3c2-c2cccnc2)N1,6.514708531475597
-> 
->1,CCC(C)Nc1c(Cl)cc2c(c1O)c(S)c(C(C)=O)n2S,6.314668516453233
-> 
->2,CCc1c(N(O)NO)c(N)c(SC)c2c1c(C)cn2CCN,6.192498368269378
+>
+> 0,N#CC1C(c2c(O)[nH]c3ccccc23)=Nc2c(I)c([SH]=O)c(Cl)c(F)c21,7.165922800132628
+>
+> 1,O=[SH]c1cccc2c1C(=NC(F)(F)F)C(c1c(O)[nH]c3cc(O)ccc13)=N2,7.08580895024169
+>
+> 2,O=[SH]c1cc(O)c2c(c1)N=C(c1c(O)[nH]c3ccc(Br)cc13)C2,7.08580895024169
+
+As we can see from this benchmark run, we have just taken an experimentally validated compound tested against the Tau protein (CHEMBL176896) and computationally generated 64 predicted compounds with increased pIC50 values of 1+.
+That is a 10x (minimum) increase in potency than what the benchmark compound originally possessed.
 
 ### ChemNet CSN Graph Demo
+Note: These are from a previous demonstration run.
 - Molecule dataset: Tau | Index 25
 - Model: test_model_1
 - Optimized graph settings: filter_strategy='performance'
