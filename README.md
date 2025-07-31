@@ -149,7 +149,7 @@ csn_network('test_model_1', 'hybrid')
 >
 > 2,O=[SH]c1cc(O)c2c(c1)N=C(c1c(O)[nH]c3ccc(Br)cc13)C2,7.08580895024169
 
-As we can see from this benchmark run, we have just taken an experimentally validated compound tested against the Tau protein (CHEMBL176896) and computationally generated 64 predicted compounds with increased pIC50 values of 1+.
+As we can see from this benchmark run, we have just taken an experimentally validated compound tested against the Tau protein (CHEMBL176896) and computationally generated 64 potential optimized candidates with increased pIC50 values of 1+.
 That is a 10x (minimum) increase in potency than what the benchmark compound originally possessed.
 
 ### ChemNet CSN Graph Demo
