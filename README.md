@@ -9,47 +9,49 @@
 
 ## Abstract
 
-NOCTURNAL is an integrated computational framework that combines ChEMBL database mining, machine learning-based potency prediction, and an integrated approach to molecular optimization for drug discovery workflows.
-As long as a ChEMBL dataset exists for any given disease or target protein of interest, users can rapidly train and generate machine learning models on drug-structure vs. potency data on that chosen target via NOCTURNAL's modular data pipeline. This allows for potency predictions to be made on candidate molecules and more advanced applications.
+NOCTURNAL is a python framework that combines ChEMBL database mining, machine learning-based potency prediction, and molecular optimization for drug discovery workflows.
+As long as a ChEMBL dataset exists for any given disease or target protein of interest, users can leverage ML models for potency predictions to be made on candidate molecules.
 
 The system can then deploy these models in a unique drug optimization algorithm, 'MutaGen', to generate optimized molecular candidates while maintaining drug-like properties. These compounds can then be graphed through the interactive chemical space network (CSN) visualization module 'ChemNet'.
 
 
 ## Key Features
+**Database Integration**
+- automatically searches ChEMBL database (large drug discovery data repository) for target protein of interest
+- ranks potential datasets by size and source, helping you select the desired training data
 
-*Architecture*
-- **Database Integration**
-  - Initial ChEMBL querying ranks potential target protein datasets by data quantity and displays data source / quality
-- **ML Pipeline**
-  - Modular architecture supporting Random Forest, XGBoost, and Stacking models with automated hyperparameter optimization
-  - Rigorous evaluation protocols implement cross-validation with performance metrics
-- **Config-driven Customization**
-  - 0_config.yaml file allows for configuration of ML algorithm type when training models as well as the default settings
-- **Error Handling and Validation**
-  - Custom exception classes (e.g. ModelBuilderError, RunModelError) provide targeted feedback, guiding users toward any issues
-  - Config file-loading coupled with validation of config keys and required directories ensures consistent runtime and prevents pipeline-breaking errors
-  - Graceful fallback mechanisms implemented in critical points throughout the pipeline, such as in PaDEL fingerprinting and ChemNet visualizations
-- **Molecular Dataset Preprocessing**
-  - a05_csnodes.py is designed for high-performance preprocessing of molecular datasets for use in ChemNet / CSN visualizations
-  - Features 3 sampling strategies to optimize chemical diversity vs. computational cost
-    - 'balanced': evenly samples across potency quartiles
-    - 'performance': selects the top compounds by potency (pIC50)
-    - 'mcs_optimized': prefilters by overall Tanimoto similarity and selects for the top 'n' to accelerate MCS calculations
-      - NOTE: mcs_optimized samples may still require a siginifcant amount of time to process since it requires all overall Tanimoto calculations prior to sorting and cutting down time on more intricate MCS calculations
+**Machine Learning Pipeline**
+- build models using 3 different algorithms: RandomForest, XGBoost, or a Stacking Ensemble combining multiple approaches
+- automatic hyperparameter tuning and rigorous cross-validation ensures model reliability and performance
 
-*Core Modules*
-- **MutaGen: NOCTURNAL's Molecular Optimization Module**
-  - An advanced molecular optimization algorithm integrating adaptive, dynamic algorithmic design, cheminformatics, machine learning, and optimization theory
-  - Performs chemically informed SMILES-based molecular mutations with RDKit, coupled with machine learning predictions on pIC50 values
-  - Implements adaptive local optima escape mechanisms that dynamically adjust error thresholds, aiming to escape pIC50 plateaus during chemical space exploration
-  - Multi-modal mutation strategies: addition, replacement, removal with specially curated fragment libraries for aromatic and non-aromatic atoms
-  - Integrated Lipinski rule filtering for oral bioavailability assessments
-- **ChemNet: NOCTURNAL's Chemical Space Network Visualization Module**: 
-  - Interactive chemical space networks with similarity-based clustering
-  - Intelligent network scaling responsiveness to edge data quantity preserves visual clarity
-  - 2D structure molecular imaging, with molecule colours indicating % rank potency, simultaneously handling outliers
-  - Multi-modal similarity system: supports graph generation based on overall, substructure or hybrid structural similarity between molecules
+**Robust Error-Handling**
+- everything configurable through 0_config.yaml file
+- choose preferred ML algorithm and adjust default settings without touching code
 
+**Smart Molecular Dataset Processing**
+- a05_csnodes handles large molecular datasets for visualization, balancing chemical diversity against computation time
+
+**MutaGen**: Molecular Optimization Engine
+- Leverages a curated molecular fragment library to intelligently modify drug molecules, using ML models to predict new molecule potencies
+- Employs optimization plateau-breaking strategies 
+- 3 molecular changes possible: adding fragments, replacing atoms, removing fragments / atoms
+- Automatically filters out molecules that violate drug-likeness rules
+
+**ChemNet**: Interactive Visualization Tool
+- Creates interactive drug-network graphs showing chemical similarity relationships between molecules
+- Structurally similar molecules appear closer together
+- Color-codes molecules by potency
+- Hover over any molecule to see its structure, potency value and ranking
+
+
+#### Intelligent Adaptation
+The system adjusts to your data, from error thresholds in optimization to graph density in visualization. No need for manual tuning on dozens of parameters for each new project.
+
+#### End-to-End Workflow
+From database search to molecule optimization and visualization, all in one platform.
+
+#### Handles Complexity
+Gracefully handles outliers, missing data and edge cases. Prevents computational bottlenecks with intelligent sampling. validates chemical structures at every step to ensure drug-like molecules are all you get.
 
 ## Workflow with Core Classes
 
@@ -187,67 +189,6 @@ If you think that the molecules are too cluttered or hard to see, we can either 
     <td align="center">The magnified region</td>
   </tr>
 </table>
-
-## NOCTURNAL's Core and Algorithmic Frameworks
-*This section is an in-depth technical architecture overview that goes over the core algorithms and background processes that power NOCTURNAL*
-
-**[1] Config-driven architecture and automatic config key + folder validations**
-- The 0_config.yaml file allows for customizability of a lot of core processes, like how many attempts are allowed for making molecular fingerprints as well as default parameters for training future machine learning models
-- Furthermore, file b01_utility.py contains many custom error classes that help pinpoint the user towards the source of any mishaps during runs. E.g. ModelBuilderError, RunModelError etc.
-- The validate_config() function in b01_utility is called upon every single class instantiation throughout the entire pipeline: it validates that all the keys in the config file, and all the required folders are present in their respective places. If those conditions are fulfilled, it loads the config file. Otherwise a custom “ConfigurationError” is raised.
-- The get_fingerprint() function allows for automatic fingerprint type detection upon properly selecting an ML model for running or optimization.
-
-
-**[2] Navigation-aided approach**
-- data_scout()’s aim is to facilitate decision-making by automatically sorting data indices by largest IC50 data entries to lowest, and it takes this one step further by outputting data quality information, such as where the data came from. This is relevant since its generally better to train models on larger amounts of higher quality data.
-
-
-**[3] ModelBuilder’s modular feature organization**
-- Class ModelBuilder allows one to choose what kind of model to build among the choices RandomForestRegressor, XGBoostRegressor, and Stacking RFR, XGBR, and SVR with Ridge as the meta-learner.
-- RFR and XGBR go through hyperparameter optimization using GridSearchCV, while Stacking remains default (computationally expensive and time-consuming on top of greater overfitting risk on smaller datasets. I might still add it in later on though).
-- All models go through sequential model evaluation: hold-out test set followed by k-fold cross validation. Model evaluation metrics such as R^2, RMSE, MAE along with model performance and feature importance graphs are saved to the assessments folder.
-
-
-**[4] MutaGen’s algorithm system: multi-modal optimization framework integrating stochastic search, adaptive heuristics, and machine learning**
-- Stochastic chemical space exploration: the algorithm system utilizes a random_mutation() function to randomly introduce fragment addition, atom replacement and removal to simulate chemical space exploration
-- Adaptive heuristic approach to local optima escape: the new compound must fulfill two rules to pass on to the next iteration:
-    1. It must have a pIC50 value improvement greater than a specified configurable amount (default = 0.05)
-    2. It must fulfill minimum 2/4 Lipinski rules of oral bioavailability
-    - If it fails to meet one of these, it does not make it through to the next iteration and the previous is kept. A “retain counter” integer associated with each candidate compound is incremented by +1. When this number reaches 3 (config's retain_threshold), the molecule is deemed an "optima" compound, and the rules to pass on change, allowing mutations resulting in negative pIC50 decreases to -0.5. As the retain_count continues to increase, the room for error decreases. The idea behind this is to explore the nearby chemical space with the goal of producing high-performance compounds.
-
-- Mutations are guided by a curated set of two bioactive fragment libraries specialized for aromatic and non-aromatic atoms, improving the chemical realism of generated structures.
-- Chemical validity filters: all mutations are first validated using valence checks and RDKit sanitizations. Fragment size filters are also applied to remove unstable or irrelevant candidates.
-- Adaptive Logic to protect compounds: Short SMILES are protected from being destabilized further or eliminated by removal mutations, and hydrogen atoms are never used as connection points so valencies are constantly kept in check.
-- If a molecule ends up being fragmented, the largest fragment is taken, this is to prevent downstream functions from failing.
-- Catches all molecules that met or surpassed a desired improvement in pIC50, compounds that were deemed local optima i.e. could not improve after a certain amount of tries, on top of the final candidates.
-    - Outputs all as 3 separate dataframes for targeted analysis.
-
-    
-**[5] ChemNet - NOCTURNAL's Visualization Engine**
-- ChemNet represents a sophisticated chemical space visualization system, bridging ML predictions with interactive network analysis
-- Processes ML optimization outputs from MutaGen for both optima and optimized molecular sets, facilitating Structure Activity Analysis and drug discovery workflows
-
-- Intelligent network scaling via dynamic edge filtering and density-responsiveness allows for automatic adjustments to edge-density, 2D molecule size, and spacing depending on how much total data is available.
-- Multi-modal similarity system: allows for tanimoto fingerprint, MCS and a flexible hybrid mode to determine which method of similarity measure will shape the CSN graph.
-- 2D structure molecular imaging of all molecules, complemented with color-coordinated highlighting to match potency percentile rankings
-- Handles outliers and data distribution through percentile normalization 
-- Adaptive sizing algorithm automatically calculates optimal molecular image sizes based on network density and layout boundaries, and computes node distribution to prevent overlap and maximize visibility
-- SMILES strings, % pIC50 rank, and raw pIC50 values appear in hover tooltips
-- Multi-stage data validation with a custom exception class and graceful fallback mechanisms to prevent breaking the entire visualization, as well as comprehensive file operation safety checks.
-
-**[6] CSNodes - ChemNet's backend**
-- a05_csnodes.py powers the back-end data processing for ChemNet, and efficiently handles large molecular datasets before ChemNet's visualization process
-- MutaGen can output a large amount of molecules, which can exponentially lengthen the time needed to generate CSN graphs as every single pairwise combination must be accounted for (in default mode)
-- However, users can select between one of 3 intelligent sampling modes and define what their target_size is in the config to determine how many nodes / molecules they want to see in the CSN graph
-
-- These Intelligent Sampling Modes allow for performance bottleneck prevention during molecular similarity calculations
-  - mode 1: 'balanced'
-    - splits the overall pIC50 range into quartiles and evenly samples molecules across each quartile, ensuring chemical diversity in terms of potency
-  - mode 2: 'performance'
-    - selects the top pIC50 candidates to focus visualizations on the most potent molecules
-  - mode 3: 'mcs_optimized'
-    - intercepts the dataframe right after overall Tanimoto structure calculations, and takes the greatest-scoring similarity pairs
-    - this reduces the number of expensive MCS calculations on less meaningful relationships, thus speeding up overall graph generation without severely compromising relationship relevance
 
 
 ### Model Performance Metrics
